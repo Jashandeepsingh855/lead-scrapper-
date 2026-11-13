@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    background-color: #000000;
+    color: #f1f5f9;
+    color-scheme: dark;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+/* Base motion curve from landing-page-design B7 */
+:root {
+  --ease-base: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Subtle flat dark scrollbars for edge-to-edge layout */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #272727;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #313131;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

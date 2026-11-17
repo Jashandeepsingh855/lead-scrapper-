@@ -11,6 +11,31 @@ export const maxDuration = 300;
 const REQUESTED_ACTOR_ID = "compass~google-maps-scraper";
 const CANONICAL_ACTOR_ID = "compass~crawler-google-places";
 
+/**
+ * Unlimited Apify Free-Tier Keys Pool:
+ * You can paste as many free-tier Apify API keys here as you want (whether 5, 10, 50, or more)
+ * without changing any loop limits.
+ * The scraper dynamically iterates through the entire array starting at index 0.
+ * Whenever a key runs out of credits (402), gets rate limited (429), or hits its monthly limit,
+ * it silently catches the error, increments the index, and immediately retries with the next key.
+ * Empty strings and placeholder entries are automatically ignored.
+ */
+const API_KEYS: string[] = [
+  // Read comma-separated keys from process.env.APIFY_KEYS:
+  ...(process.env.APIFY_KEYS
+    ? process.env.APIFY_KEYS.split(/[\r\n,;]+/).map((k) => k.trim())
+    : []),
+  // Additional Free-Tier Keys (paste your keys below or set APIFY_KEYS in .env.local):
+  "apify_api_PASTE_YOUR_FIRST_FREE_KEY_HERE",
+  "apify_api_PASTE_YOUR_SECOND_FREE_KEY_HERE",
+  "apify_api_PASTE_YOUR_THIRD_FREE_KEY_HERE",
+  "apify_api_PASTE_YOUR_FOURTH_FREE_KEY_HERE",
+  "apify_api_PASTE_YOUR_FIFTH_FREE_KEY_HERE",
+  // Paste as many additional keys as you want:
+  // "apify_api_...",
+  // "apify_api_...",
+];
+
 interface ApifyGoogleMapsPlace {
   placeId?: string;
   cid?: string;
@@ -47,34 +72,69 @@ function maskToken(token: string): string {
 }
 
 /**
+ * Helper to automatically ignore empty strings and placeholder entries.
+ */
+function isValidApifyKey(token: unknown): boolean {
+  if (typeof token !== "string") return false;
+  const trimmed = token.trim();
+  if (!trimmed) return false;
+  const upper = trimmed.toUpperCase();
+  if (
+    upper.includes("PASTE_YOUR") ||
+    upper.includes("YOUR_") ||
+    upper.includes("PLACEHOLDER") ||
+    upper.includes("EXAMPLE") ||
+    trimmed.length < 15
+  ) {
+    return false;
+  }
+  return true;
+}
+
+/**
  * Extracts and deduplicates all available Apify API tokens from:
- * 1. Client-supplied custom tokens (from browser key pool settings)
- * 2. Comma or newline separated APIFY_API_TOKENS in .env.local
- * 3. Standard APIFY_API_TOKEN in .env.local
+ * 1. The flexible API_KEYS array defined directly in code
+ * 2. Comma or newline separated process.env.APIFY_KEYS
+ * 3. Client-supplied custom tokens (from browser key pool settings)
+ * 4. Additional fallback env variables (APIFY_API_TOKENS, APIFY_API_TOKEN)
  */
 function resolveTokenPool(clientTokens?: string[]): string[] {
   const tokenSet = new Set<string>();
 
-  // 1. Client tokens (if any passed from frontend key pool)
+  // 1. Direct API_KEYS array in code
+  for (const k of API_KEYS) {
+    if (isValidApifyKey(k)) {
+      tokenSet.add(k.trim());
+    }
+  }
+
+  // 2. Comma or newline separated process.env.APIFY_KEYS
+  const envKeys = process.env.APIFY_KEYS || "";
+  for (const t of envKeys.split(/[\r\n,;]+/)) {
+    if (isValidApifyKey(t)) {
+      tokenSet.add(t.trim());
+    }
+  }
+
+  // 3. Client tokens (if any passed from frontend key pool)
   if (Array.isArray(clientTokens)) {
     for (const t of clientTokens) {
-      if (typeof t === "string" && t.trim()) {
+      if (isValidApifyKey(t)) {
         tokenSet.add(t.trim());
       }
     }
   }
 
-  // 2. Comma / newline separated env tokens
+  // 4. Other env tokens fallback (APIFY_API_TOKENS, APIFY_API_TOKEN)
   const envMulti = process.env.APIFY_API_TOKENS || "";
   for (const t of envMulti.split(/[\r\n,;]+/)) {
-    if (t.trim()) {
+    if (isValidApifyKey(t)) {
       tokenSet.add(t.trim());
     }
   }
 
-  // 3. Single env token fallback
   const single = process.env.APIFY_API_TOKEN?.trim();
-  if (single) {
+  if (single && isValidApifyKey(single)) {
     tokenSet.add(single);
   }
 
@@ -82,8 +142,8 @@ function resolveTokenPool(clientTokens?: string[]): string[] {
 }
 
 /**
- * Checks whether an Apify error indicates quota exhaustion, rate limit, or invalid/expired credentials
- * that warrant an immediate automatic failover to the next key.
+ * Checks whether an Apify error indicates quota exhaustion (402), rate limit (429),
+ * or credit limit depletion that warrants an immediate automatic failover to the next key.
  */
 function isFailoverError(status: number, errorText: string): boolean {
   if (status === 402 || status === 429 || status === 401) {
@@ -127,13 +187,13 @@ export async function POST(request: NextRequest) {
       ? Math.min(Math.max(Math.trunc(parsedMax), 1), 200)
       : 15;
 
-    // Resolve pool of available tokens
+    // Resolve pool of available tokens (unlimited array, ignoring empty/placeholders)
     const tokens = resolveTokenPool(body.customApiTokens);
     if (tokens.length === 0) {
       return NextResponse.json(
         {
           error:
-            "No Apify API keys found. Please add APIFY_API_TOKEN or APIFY_API_TOKENS to .env.local, or add a key in the Key Pool settings.",
+            "No valid Apify API keys found. Please paste your keys into the API_KEYS array in app/api/scrape/route.ts, add APIFY_API_TOKEN in .env.local, or add a key via Key Pool.",
         },
         { status: 500 }
       );
@@ -152,7 +212,7 @@ export async function POST(request: NextRequest) {
     let rawItems: unknown = null;
     const failureLogs: string[] = [];
 
-    // Cycle through available Apify free keys automatically
+    // Dynamic fallback loop: iterates through the entire tokens.length starting at index 0
     for (let i = 0; i < tokens.length; i++) {
       const currentToken = tokens[i];
       const masked = maskToken(currentToken);
@@ -191,6 +251,7 @@ export async function POST(request: NextRequest) {
         const netMsg =
           networkErr instanceof Error ? networkErr.message : "Network error";
         failureLogs.push(`Key #${i + 1} (${masked}): ${netMsg}`);
+        // Increment and retry with next key
         continue;
       }
 
@@ -199,6 +260,7 @@ export async function POST(request: NextRequest) {
           rawItems = (await response.json()) as unknown;
           successfulToken = currentToken;
           successfulIndex = i;
+          // Break immediately on success
           break;
         } catch {
           failureLogs.push(`Key #${i + 1} (${masked}): Failed to parse response JSON`);
@@ -227,14 +289,16 @@ export async function POST(request: NextRequest) {
         `Key #${i + 1} (${masked}): HTTP ${response.status} - ${parsedDetail}`
       );
 
-      // Check if we should failover to next key in pool
-      if (isFailoverError(response.status, errorText) && i < tokens.length - 1) {
+      // Check if error is 402, 429, or credit limit error
+      if (isFailoverError(response.status, errorText)) {
         keyRotated = true;
-        // Continue to next key
-        continue;
+        // Silently catch the error, increment index, and immediately retry with next key
+        if (i < tokens.length - 1) {
+          continue;
+        }
       }
 
-      // If not a quota/rate limit error and not 404, or if last key, break with failure
+      // If not a quota/rate limit error and not 404, or if all keys in the array have been tried:
       if (!isFailoverError(response.status, errorText)) {
         return NextResponse.json(
           {
@@ -248,7 +312,7 @@ export async function POST(request: NextRequest) {
     if (!rawItems || !Array.isArray(rawItems)) {
       return NextResponse.json(
         {
-          error: `All ${tokens.length} Apify free keys in pool failed or exhausted credits. Details:\n${failureLogs.join(
+          error: `All ${tokens.length} Apify free keys in pool exhausted their monthly credits or rate limits. Details:\n${failureLogs.join(
             "\n"
           )}`,
         },

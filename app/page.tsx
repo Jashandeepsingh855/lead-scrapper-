@@ -57,13 +57,53 @@ export default function LeadDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("cafes in hanumangarh");
   const [maxResults, setMaxResults] = useState<number>(20);
   const [locationOverride, setLocationOverride] = useState<string>("");
-  const [pitchTemplate, setPitchTemplate] = useState(DEFAULT_PITCH_TEMPLATE);
 
-  const [leads, setLeads] = useState<ScrapedLead[]>([]);
+  // Persist custom WhatsApp pitch template across page refreshes
+  const [pitchTemplate, setPitchTemplate] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("leadflow_pitch_template");
+        if (saved && saved.trim()) return saved;
+      } catch {
+        // Fallback
+      }
+    }
+    return DEFAULT_PITCH_TEMPLATE;
+  });
+
+  // Persist scraped leads array across page refreshes
+  const [leads, setLeads] = useState<ScrapedLead[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("leadflow_saved_leads");
+        if (saved) {
+          const parsed = JSON.parse(saved) as ScrapedLead[];
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed;
+          }
+        }
+      } catch {
+        // Fallback
+      }
+    }
+    return [];
+  });
+
   const [scrapeStats, setScrapeStats] = useState<{
     totalRaw: number;
     filteredOut: number;
-  } | null>(null);
+  } | null>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("leadflow_saved_stats");
+        if (saved) return JSON.parse(saved);
+      } catch {
+        // Fallback
+      }
+    }
+    return null;
+  });
+
   const [isScraping, setIsScraping] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -99,7 +139,20 @@ export default function LeadDashboardPage() {
   // Filtering & Status State
   const [tableFilter, setTableFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "contacted">("all");
-  const [openedIds, setOpenedIds] = useState<Set<string>>(() => new Set());
+  const [openedIds, setOpenedIds] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("leadflow_opened_ids");
+        if (saved) {
+          const parsed = JSON.parse(saved) as string[];
+          if (Array.isArray(parsed)) return new Set(parsed);
+        }
+      } catch {
+        // Fallback
+      }
+    }
+    return new Set();
+  });
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [downloadSuccessPlatform, setDownloadSuccessPlatform] = useState<VcfPlatform | null>(null);
   const [showAndroidGuide, setShowAndroidGuide] = useState(false);
@@ -123,6 +176,46 @@ export default function LeadDashboardPage() {
         // Fallback
       });
   }, []);
+
+  // Save custom WhatsApp outreach pitch template to localStorage whenever it updates
+  useEffect(() => {
+    try {
+      localStorage.setItem("leadflow_pitch_template", pitchTemplate);
+    } catch {
+      // Ignore
+    }
+  }, [pitchTemplate]);
+
+  // Save scraped leads array to localStorage whenever leads update
+  useEffect(() => {
+    try {
+      if (leads.length > 0) {
+        localStorage.setItem("leadflow_saved_leads", JSON.stringify(leads));
+      }
+    } catch {
+      // Ignore
+    }
+  }, [leads]);
+
+  // Save scrape stats to localStorage whenever they update
+  useEffect(() => {
+    try {
+      if (scrapeStats) {
+        localStorage.setItem("leadflow_saved_stats", JSON.stringify(scrapeStats));
+      }
+    } catch {
+      // Ignore
+    }
+  }, [scrapeStats]);
+
+  // Save opened/contacted IDs to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("leadflow_opened_ids", JSON.stringify(Array.from(openedIds)));
+    } catch {
+      // Ignore
+    }
+  }, [openedIds]);
 
   // Save custom keys to localStorage
   function handleSaveCustomKeys(newKeys: string[]) {
@@ -345,6 +438,13 @@ export default function LeadDashboardPage() {
     setOpenedIds(new Set());
     setTableFilter("");
     setErrorMessage(null);
+    try {
+      localStorage.removeItem("leadflow_saved_leads");
+      localStorage.removeItem("leadflow_saved_stats");
+      localStorage.removeItem("leadflow_opened_ids");
+    } catch {
+      // Ignore
+    }
   }
 
   return (
@@ -653,6 +753,17 @@ export default function LeadDashboardPage() {
                   <span className="text-[10px] text-slate-400">Google &amp; Samsung Contacts</span>
                 </button>
               </div>
+
+              {/* Clear Saved Data Button */}
+              <button
+                type="button"
+                onClick={handleClearLeads}
+                className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-rose-500/25 bg-rose-500/10 py-2 px-3 text-xs font-medium text-rose-300 transition-all hover:border-rose-500/40 hover:bg-rose-500/15 active:scale-[0.98]"
+                title="Clear saved leads and remove from localStorage"
+              >
+                <Trash2 className="h-3.5 w-3.5 text-rose-400" />
+                <span>Clear Leads</span>
+              </button>
             </div>
           )}
 
@@ -738,10 +849,11 @@ export default function LeadDashboardPage() {
                 <button
                   type="button"
                   onClick={handleClearLeads}
-                  className="rounded-xl border border-[#262626] bg-[#161616] p-2 text-slate-400 hover:border-rose-500/30 hover:text-rose-300"
-                  title="Clear leads queue"
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-500/25 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-300 transition-all hover:border-rose-500/40 hover:bg-rose-500/20 active:scale-[0.98]"
+                  title="Clear leads queue and remove from localStorage"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-3.5 w-3.5 text-rose-400" />
+                  <span className="hidden sm:inline">Clear Leads</span>
                 </button>
               </div>
             )}

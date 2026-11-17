@@ -450,7 +450,7 @@ export default function LeadDashboardPage() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#1e3540] text-slate-100 lg:h-screen lg:flex-row lg:overflow-hidden">
       {/* Left Sidebar Control Panel */}
-      <aside className="flex w-full shrink-0 flex-col border-b border-[#486470] bg-[#253d47] lg:h-full lg:w-[350px] lg:border-b-0 lg:border-r xl:w-[370px]">
+      <aside className="flex w-full shrink-0 flex-col border-b border-[#486470] bg-[#253d47] lg:h-full lg:w-[420px] lg:border-b-0 lg:border-r xl:w-[440px]">
         {/* Brand Header */}
         <div className="flex items-center justify-between border-b border-[#486470] bg-[#2a4250] px-6 py-4">
           <div className="flex items-center gap-3">

@@ -1,7 +1,7 @@
-import type { ScrapedLead } from "./types";
+import type { ScrapedLead, VcfPlatform } from "./types";
 
 /**
- * Escapes special characters per RFC 2426 (vCard 3.0) so macOS Contacts
+ * Escapes special characters per RFC 2426 (vCard 3.0) so Contacts
  * parses commas, semicolons, backslashes, and newlines reliably.
  */
 function escapeVCardValue(value: string): string {
@@ -26,7 +26,7 @@ function formatVCardPhone(lead: ScrapedLead): string {
 }
 
 /**
- * Capitalizes words in a string into Title Case while preserving uppercase acronyms (e.g., UK, USA, NY).
+ * Capitalizes words in a string into Title Case while preserving uppercase acronyms (e.g. UK, USA, NY, CP).
  */
 export function toTitleCase(str: string): string {
   return str
@@ -78,7 +78,7 @@ export function extractLocationFromQuery(query: string): string {
 }
 
 /**
- * Automatically constructs the sequential macOS contact name using:
+ * Automatically constructs the sequential contact name using:
  * [Original Business Title] + [Search Query Location] + [Serial Number]
  *
  * Example:
@@ -101,8 +101,9 @@ export function buildSequentialContactName(
 }
 
 /**
- * Generates a macOS Contacts compatible vCard 3.0 (.vcf) string
- * mapping each contact to: [Original Business Title] + [Location] + [Serial Number].
+ * Generates an Apple / macOS / iOS compatible vCard 3.0 (.vcf) string.
+ * Formatted with GivenName slot for macOS Contacts so names are preserved in sequence
+ * without surname flipping.
  */
 export function generateMacVcf(
   leads: ScrapedLead[],
@@ -130,9 +131,7 @@ export function generateMacVcf(
     const lines = [
       "BEGIN:VCARD",
       "VERSION:3.0",
-      "PRODID:-//LocalLeadDashboard//MacContacts//EN",
-      // Put sequential name in both N (given name slot) and FN so macOS Contacts
-      // displays "[Title] [Location] [Number]" in order without flipping tokens.
+      "PRODID:-//LeadFlow//AppleContacts//EN",
       `N:;${escapedName};;;`,
       `FN:${escapedName}`,
       `ORG:${escapedOrg}`,
@@ -148,14 +147,74 @@ export function generateMacVcf(
 }
 
 /**
- * Triggers a browser download of the generated .vcf file.
+ * Generates an Android / Google Contacts / Samsung Contacts compatible vCard (.vcf) string.
+ * Uses UTF-8 charset declarations, structured N field in family slot, and Android-specific
+ * custom metadata so the Android Contacts app and Google Contacts (contacts.google.com)
+ * import and index contacts instantly with zero name-inversion.
  */
-export function downloadMacVcf(
+export function generateAndroidVcf(
   leads: ScrapedLead[],
   location: string
+): string {
+  const cleanLocation = location.trim();
+
+  const cards = leads.map((lead, index) => {
+    const contactName = buildSequentialContactName(
+      lead.title,
+      cleanLocation,
+      index + 1
+    );
+    const escapedName = escapeVCardValue(contactName);
+    const escapedOrg = escapeVCardValue(lead.title);
+    const vcardPhone = formatVCardPhone(lead);
+
+    const noteParts = [`Business: ${lead.title}`];
+    if (cleanLocation) noteParts.push(`Location: ${cleanLocation}`);
+    if (lead.category) noteParts.push(`Category: ${lead.category}`);
+    if (lead.address) noteParts.push(`Address: ${lead.address}`);
+    if (lead.website) noteParts.push(`Website: ${lead.website}`);
+    const escapedNote = escapeVCardValue(noteParts.join(" | "));
+
+    const lines = [
+      "BEGIN:VCARD",
+      "VERSION:3.0",
+      "PRODID:-//LeadFlow//AndroidGoogleContacts//EN",
+      `FN;CHARSET=UTF-8:${escapedName}`,
+      `N;CHARSET=UTF-8:${escapedName};;;;`,
+      `ORG;CHARSET=UTF-8:${escapedOrg}`,
+      `TEL;TYPE=CELL;TYPE=PREF:${vcardPhone}`,
+      `X-ANDROID-CUSTOM:vnd.android.cursor.item/organization;${escapedOrg};;;;;;;;;;;;;`,
+      `NOTE;CHARSET=UTF-8:${escapedNote}`,
+      "END:VCARD",
+    ];
+
+    return lines.join("\r\n");
+  });
+
+  return cards.join("\r\n") + "\r\n";
+}
+
+/**
+ * Unified VCF download dispatcher for Apple (Mac/iOS) or Android (Google Contacts).
+ */
+export function downloadVcf(
+  leads: ScrapedLead[],
+  location: string,
+  platform: VcfPlatform = "apple"
 ): void {
-  const vcfContent = generateMacVcf(leads, location);
-  const blob = new Blob([vcfContent], { type: "text/vcard;charset=utf-8" });
+  if (leads.length === 0) return;
+
+  const isAndroid = platform === "android";
+  const vcfContent = isAndroid
+    ? generateAndroidVcf(leads, location)
+    : generateMacVcf(leads, location);
+
+  // text/x-vcard is widely supported by Android download managers to prompt "Open with Contacts"
+  const mimeType = isAndroid
+    ? "text/x-vcard;charset=utf-8"
+    : "text/vcard;charset=utf-8";
+
+  const blob = new Blob([vcfContent], { type: mimeType });
   const url = URL.createObjectURL(blob);
 
   const slug =
@@ -165,12 +224,30 @@ export function downloadMacVcf(
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "") || "leads";
 
+  const filename = isAndroid
+    ? `${slug}-android-google-contacts.vcf`
+    : `${slug}-apple-mac-contacts.vcf`;
+
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `${slug}-mac-contacts.vcf`;
+  anchor.download = filename;
   document.body.appendChild(anchor);
   anchor.click();
   document.body.removeChild(anchor);
 
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/**
+ * Convenience export for Apple / macOS / iOS
+ */
+export function downloadMacVcf(leads: ScrapedLead[], location: string): void {
+  downloadVcf(leads, location, "apple");
+}
+
+/**
+ * Convenience export for Android / Google Contacts
+ */
+export function downloadAndroidVcf(leads: ScrapedLead[], location: string): void {
+  downloadVcf(leads, location, "android");
 }

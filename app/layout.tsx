@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SmoothScrollProvider } from "@/components/SmoothScroll";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "LeadFlow | Local Business Lead Generation & WhatsApp Outreach",
   description:
-    "Local business lead scraper and semi automated WhatsApp outreach dashboard with macOS Contacts sync.",
+    "Local business lead scraper and WhatsApp outreach dashboard with automatic Apify multi-key rotation and Apple + Android contacts sync.",
 };
 
 export default function RootLayout({
@@ -29,7 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-[#000000] font-sans text-slate-100 antialiased selection:bg-emerald-500/25 selection:text-emerald-200`}
         style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}
       >
-        {children}
+        <SmoothScrollProvider>{children}</SmoothScrollProvider>
       </body>
     </html>
   );

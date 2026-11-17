@@ -350,7 +350,7 @@ export default function LeadDashboardPage() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#000000] text-slate-100 lg:h-screen lg:flex-row lg:overflow-hidden">
       {/* Left Sidebar Control Panel */}
-      <aside className="flex w-full shrink-0 flex-col border-r border-[#262626] bg-[#0c0c0c] lg:h-full lg:w-[430px] xl:w-[460px]">
+      <aside className="flex w-full shrink-0 flex-col border-b border-[#262626] bg-[#0c0c0c] lg:h-full lg:w-[350px] lg:border-b-0 lg:border-r xl:w-[370px]">
         {/* Brand Header */}
         <div className="flex items-center justify-between border-b border-[#262626] bg-[#121212] px-6 py-4">
           <div className="flex items-center gap-3">
@@ -439,27 +439,46 @@ export default function LeadDashboardPage() {
             </div>
           </div>
 
-          {/* Grid: Max Results Stepper + Detected Location */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Grid: Max Results (Manual Number Input + Preset Chips) + Detected Location */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="maxResults" className="text-xs font-medium text-slate-300">
-                Max leads count
-              </label>
-              <div className="flex items-center gap-1">
-                {PRESET_LIMITS.map((limit) => (
-                  <button
-                    key={limit}
-                    type="button"
-                    onClick={() => setMaxResults(limit)}
-                    className={`flex-1 rounded-lg border py-1.5 text-xs font-mono font-medium transition-all ${
-                      maxResults === limit
-                        ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
-                        : "border-[#262626] bg-[#161616] text-slate-400 hover:border-[#383838] hover:text-white"
-                    }`}
-                  >
-                    {limit}
-                  </button>
-                ))}
+              <div className="flex items-center justify-between">
+                <label htmlFor="maxResults" className="text-xs font-medium text-slate-300">
+                  Max leads count
+                </label>
+                <span className="text-[10px] text-slate-500">Custom number</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <input
+                  id="maxResults"
+                  type="number"
+                  min={1}
+                  max={200}
+                  value={maxResults || ""}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    setMaxResults(Number.isNaN(val) ? 0 : Math.max(1, Math.min(val, 200)));
+                  }}
+                  placeholder="20"
+                  className="w-16 rounded-xl border border-[#262626] bg-[#161616] px-2.5 py-1.5 text-center font-mono text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500/50"
+                  title="Type any custom number of leads (1-200)"
+                />
+                <div className="flex flex-1 items-center gap-1">
+                  {PRESET_LIMITS.map((limit) => (
+                    <button
+                      key={limit}
+                      type="button"
+                      onClick={() => setMaxResults(limit)}
+                      className={`flex-1 rounded-lg border py-1.5 text-[11px] font-mono font-medium transition-all ${
+                        maxResults === limit
+                          ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
+                          : "border-[#262626] bg-[#161616] text-slate-400 hover:border-[#383838] hover:text-white"
+                      }`}
+                    >
+                      {limit}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -902,18 +921,25 @@ export default function LeadDashboardPage() {
               </button>
             </div>
           ) : (
-            /* DATA TABLE */
+            /* LEADS DISPLAY: RESPONSIVE DESKTOP TABLE & MOBILE CARDS */
             <div className="rounded-2xl border border-[#262626] bg-[#111111] overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-left text-sm">
+              {/* DESKTOP TABLE (md+): Perfectly aligned in 1 window, NO horizontal scroll needed */}
+              <div className="hidden md:block overflow-hidden">
+                <table className="w-full border-collapse text-left text-sm table-fixed">
+                  <colgroup>
+                    <col className="w-12" />
+                    <col className="w-52 lg:w-60" />
+                    <col className="" />
+                    <col className="w-44" />
+                    <col className="w-44" />
+                  </colgroup>
                   <thead className="border-b border-[#262626] bg-[#161616] text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     <tr>
-                      <th className="w-12 px-4 py-3.5">#</th>
-                      <th className="px-4 py-3.5">Contact Name (.vcf)</th>
-                      <th className="px-4 py-3.5">Business &amp; Category</th>
-                      <th className="px-4 py-3.5">Verified Phone</th>
-                      <th className="hidden px-4 py-3.5 xl:table-cell">Personalized Pitch</th>
-                      <th className="px-4 py-3.5 text-right">Outreach Action</th>
+                      <th className="px-3 py-3 text-center">#</th>
+                      <th className="px-3.5 py-3">Contact Name (.vcf)</th>
+                      <th className="px-3.5 py-3">Business Details</th>
+                      <th className="px-3.5 py-3">Verified Phone</th>
+                      <th className="px-3.5 py-3 text-right">Outreach Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#222222]">
@@ -939,25 +965,25 @@ export default function LeadDashboardPage() {
                             isOpened ? "bg-emerald-950/15" : "hover:bg-[#161616]"
                           }`}
                         >
-                          <td className="px-4 py-3.5 font-mono text-xs text-slate-500">
+                          <td className="px-3 py-3 font-mono text-xs text-slate-500 text-center">
                             {String(index + 1).padStart(2, "0")}
                           </td>
 
-                          <td className="px-4 py-3.5 whitespace-nowrap">
+                          <td className="px-3.5 py-3">
                             <span className="inline-flex items-center rounded-lg border border-emerald-500/30 bg-emerald-950/20 px-2.5 py-1 font-mono text-xs font-medium text-emerald-300">
                               {assignedName}
                             </span>
                           </td>
 
-                          <td className="max-w-[260px] px-4 py-3.5">
-                            <div className="flex items-center gap-1.5 font-medium text-white">
-                              <span>{lead.title}</span>
+                          <td className="px-3.5 py-3 min-w-0">
+                            <div className="flex items-center gap-1.5 font-medium text-white truncate">
+                              <span className="truncate">{lead.title}</span>
                               {lead.googleMapsUrl && (
                                 <a
                                   href={lead.googleMapsUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-slate-500 hover:text-emerald-400"
+                                  className="text-slate-500 hover:text-emerald-400 shrink-0"
                                   title="View on Google Maps"
                                 >
                                   <ExternalLink className="h-3 w-3" />
@@ -978,16 +1004,19 @@ export default function LeadDashboardPage() {
                                 </span>
                               )}
                               {lead.address && (
-                                <span className="truncate max-w-[180px]" title={lead.address}>
+                                <span className="truncate max-w-[220px]" title={lead.address}>
                                   {lead.address}
                                 </span>
                               )}
                             </div>
+                            <p className="mt-0.5 line-clamp-1 text-[11px] text-slate-500" title={pitchPreview}>
+                              <span className="text-slate-400 font-medium">Pitch:</span> {pitchPreview}
+                            </p>
                           </td>
 
-                          <td className="px-4 py-3.5 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              <span className="flex items-center gap-1.5 font-mono text-xs text-slate-200">
+                          <td className="px-3.5 py-3 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5">
+                              <span className="flex items-center gap-1 font-mono text-xs text-slate-200">
                                 <Phone className="h-3 w-3 text-slate-500" />
                                 {lead.phone}
                               </span>
@@ -1006,44 +1035,36 @@ export default function LeadDashboardPage() {
                             </div>
                           </td>
 
-                          <td className="hidden max-w-xs px-4 py-3.5 xl:table-cell">
-                            <p className="line-clamp-2 text-xs leading-relaxed text-slate-400" title={pitchPreview}>
-                              {pitchPreview}
-                            </p>
-                          </td>
-
-                          <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                            <div className="inline-flex items-center gap-1.5">
-                              {/* Open Desktop App Protocol */}
+                          <td className="px-3.5 py-3 text-right whitespace-nowrap">
+                            <div className="inline-flex items-center justify-end gap-1.5">
                               <button
                                 type="button"
                                 onClick={() => handleOpenWhatsAppDesktop(lead)}
-                                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg py-1.5 px-3 text-xs font-semibold transition ${
+                                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg py-1.5 px-3 text-xs font-semibold transition active:scale-[0.98] ${
                                   isOpened
                                     ? "border border-emerald-500/40 bg-[#161616] text-emerald-300 hover:border-emerald-500/60"
-                                    : "bg-emerald-500 text-black hover:bg-emerald-400 active:scale-[0.98]"
+                                    : "bg-emerald-500 text-black hover:bg-emerald-400"
                                 }`}
                                 title="Launch native WhatsApp Desktop protocol"
                               >
                                 {isOpened ? (
                                   <>
                                     <CheckCircle2 className="h-3.5 w-3.5" />
-                                    Done (Reopen)
+                                    Done
                                   </>
                                 ) : (
                                   <>
                                     <ExternalLink className="h-3.5 w-3.5" />
-                                    WhatsApp App
+                                    WhatsApp
                                   </>
                                 )}
                               </button>
 
-                              {/* WhatsApp Web Fallback */}
                               <button
                                 type="button"
                                 onClick={() => handleOpenWhatsAppWeb(lead)}
                                 className="rounded-lg border border-[#2a2a2a] bg-[#161616] p-1.5 text-slate-400 hover:border-[#383838] hover:text-white"
-                                title="Open WhatsApp Web in new browser tab"
+                                title="Open WhatsApp Web in new tab"
                               >
                                 <Globe className="h-3.5 w-3.5" />
                               </button>
@@ -1054,6 +1075,112 @@ export default function LeadDashboardPage() {
                     })}
                   </tbody>
                 </table>
+              </div>
+
+              {/* MOBILE CARDS (< md): Touch-friendly, zero horizontal scroll */}
+              <div className="block md:hidden divide-y divide-[#222222]">
+                {filteredLeads.map(({ lead, index }) => {
+                  const assignedName = buildSequentialContactName(
+                    lead.title,
+                    effectiveLocation,
+                    index + 1
+                  );
+                  const isOpened = openedIds.has(lead.id);
+                  const isCopied = copiedId === lead.id;
+
+                  return (
+                    <div
+                      key={lead.id}
+                      className={`p-4 space-y-2.5 transition-colors ${
+                        isOpened ? "bg-emerald-950/15" : "bg-[#111111]"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs text-slate-500">
+                            #{String(index + 1).padStart(2, "0")}
+                          </span>
+                          <span className="inline-flex items-center rounded-md border border-emerald-500/30 bg-emerald-950/20 px-2 py-0.5 font-mono text-xs font-medium text-emerald-300">
+                            {assignedName}
+                          </span>
+                        </div>
+                        {isOpened && (
+                          <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+                            <CheckCircle2 className="h-3 w-3" /> Done
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-1.5 font-medium text-white">
+                          <span>{lead.title}</span>
+                          {lead.googleMapsUrl && (
+                            <a
+                              href={lead.googleMapsUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-slate-500 hover:text-emerald-400"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
+                        </div>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-slate-400">
+                          {lead.category && <span>{lead.category}</span>}
+                          {typeof lead.rating === "number" && (
+                            <span className="inline-flex items-center gap-0.5 text-amber-400 font-mono">
+                              <Star className="h-3 w-3 fill-amber-400" />
+                              {lead.rating.toFixed(1)}
+                            </span>
+                          )}
+                          {lead.address && (
+                            <span className="truncate max-w-[200px]">{lead.address}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between border-t border-[#222222] pt-2.5">
+                        <div className="flex items-center gap-1.5 font-mono text-xs text-slate-200">
+                          <Phone className="h-3 w-3 text-slate-500" />
+                          <span>{lead.phone}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyPhone(lead)}
+                            className="p-1 text-slate-400 hover:text-white"
+                          >
+                            {isCopied ? (
+                              <Check className="h-3.5 w-3.5 text-emerald-400" />
+                            ) : (
+                              <Copy className="h-3.5 w-3.5" />
+                            )}
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenWhatsAppDesktop(lead)}
+                            className={`inline-flex items-center gap-1 rounded-lg py-1.5 px-3 text-xs font-semibold ${
+                              isOpened
+                                ? "border border-emerald-500/40 bg-[#161616] text-emerald-300"
+                                : "bg-emerald-500 text-black hover:bg-emerald-400"
+                            }`}
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            <span>WhatsApp</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenWhatsAppWeb(lead)}
+                            className="rounded-lg border border-[#2a2a2a] bg-[#161616] p-1.5 text-slate-400"
+                          >
+                            <Globe className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

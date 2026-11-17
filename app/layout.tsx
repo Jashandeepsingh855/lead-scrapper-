@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-[#000000] font-sans text-slate-100 antialiased selection:bg-emerald-500/25 selection:text-emerald-200`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-[#1e3540] font-sans text-slate-100 antialiased selection:bg-orange-400/25 selection:text-orange-200`}
         style={{ fontFamily: "var(--font-geist-sans), system-ui, sans-serif" }}
       >
         <SmoothScrollProvider>{children}</SmoothScrollProvider>

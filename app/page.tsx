@@ -448,21 +448,21 @@ export default function LeadDashboardPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-[#000000] text-slate-100 lg:h-screen lg:flex-row lg:overflow-hidden">
+    <div className="flex min-h-screen w-full flex-col bg-[#1e3540] text-slate-100 lg:h-screen lg:flex-row lg:overflow-hidden">
       {/* Left Sidebar Control Panel */}
-      <aside className="flex w-full shrink-0 flex-col border-b border-[#262626] bg-[#0c0c0c] lg:h-full lg:w-[350px] lg:border-b-0 lg:border-r xl:w-[370px]">
+      <aside className="flex w-full shrink-0 flex-col border-b border-[#486470] bg-[#253d47] lg:h-full lg:w-[350px] lg:border-b-0 lg:border-r xl:w-[370px]">
         {/* Brand Header */}
-        <div className="flex items-center justify-between border-b border-[#262626] bg-[#121212] px-6 py-4">
+        <div className="flex items-center justify-between border-b border-[#486470] bg-[#2a4250] px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-950/20 shadow-sm">
-              <Sparkles className="h-5 w-5 text-emerald-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-400/30 bg-orange-950/20 shadow-sm">
+              <Sparkles className="h-5 w-5 text-orange-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-sm font-semibold tracking-tight text-white">
                   LeadFlow Outreach
                 </h1>
-                <span className="rounded bg-[#1f1f1f] px-1.5 py-0.5 font-mono text-[10px] text-emerald-400">
+                <span className="rounded bg-[#3b5762] px-1.5 py-0.5 font-mono text-[10px] text-orange-400">
                   v2.0
                 </span>
               </div>
@@ -476,10 +476,10 @@ export default function LeadDashboardPage() {
           <button
             type="button"
             onClick={() => setIsKeyModalOpen(true)}
-            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-2.5 py-1.5 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-emerald-500/40 hover:text-white"
+            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-[#4c6872] bg-[#37535e] px-2.5 py-1.5 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-orange-400/40 hover:text-white"
             title="Configure multiple Apify free keys pool"
           >
-            <Key className="h-3.5 w-3.5 text-emerald-400" />
+            <Key className="h-3.5 w-3.5 text-orange-400" />
             <span>
               {activeKeyInfo?.total ? `${activeKeyInfo.total} Keys` : "Key Pool"}
             </span>
@@ -507,7 +507,7 @@ export default function LeadDashboardPage() {
               className="flex items-center justify-between text-xs font-medium text-slate-300"
             >
               <span className="flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5 text-emerald-400" />
+                <MapPin className="h-3.5 w-3.5 text-orange-400" />
                 Google Maps search query
               </span>
               <span className="text-[11px] text-slate-500">Free dynamic crawl</span>
@@ -519,7 +519,7 @@ export default function LeadDashboardPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="e.g. cafes in hanumangarh"
-                className="w-full rounded-xl border border-[#262626] bg-[#161616] px-3.5 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30"
+                className="w-full rounded-xl border border-[#486470] bg-[#324d58] px-3.5 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus:border-orange-400/50 focus:ring-1 focus:ring-orange-400/30"
                 required
               />
             </div>
@@ -531,7 +531,7 @@ export default function LeadDashboardPage() {
                   key={prompt}
                   type="button"
                   onClick={() => setSearchQuery(prompt)}
-                  className="rounded-md border border-[#262626] bg-[#161616] px-2 py-0.5 text-[11px] text-slate-400 transition-colors hover:border-[#383838] hover:text-white active:scale-[0.98]"
+                  className="rounded-md border border-[#486470] bg-[#324d58] px-2 py-0.5 text-[11px] text-slate-400 transition-colors hover:border-[#5a7880] hover:text-white active:scale-[0.98]"
                 >
                   {prompt}
                 </button>
@@ -560,7 +560,7 @@ export default function LeadDashboardPage() {
                     setMaxResults(Number.isNaN(val) ? 0 : Math.max(1, Math.min(val, 200)));
                   }}
                   placeholder="20"
-                  className="w-16 rounded-xl border border-[#262626] bg-[#161616] px-2.5 py-1.5 text-center font-mono text-sm text-white placeholder-slate-500 outline-none transition focus:border-emerald-500/50"
+                  className="w-16 rounded-xl border border-[#486470] bg-[#324d58] px-2.5 py-1.5 text-center font-mono text-sm text-white placeholder-slate-500 outline-none transition focus:border-orange-400/50"
                   title="Type any custom number of leads (1-200)"
                 />
                 <div className="flex flex-1 items-center gap-1">
@@ -571,8 +571,8 @@ export default function LeadDashboardPage() {
                       onClick={() => setMaxResults(limit)}
                       className={`flex-1 rounded-lg border py-1.5 text-[11px] font-mono font-medium transition-all ${
                         maxResults === limit
-                          ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
-                          : "border-[#262626] bg-[#161616] text-slate-400 hover:border-[#383838] hover:text-white"
+                          ? "border-orange-400/40 bg-orange-400/15 text-orange-300"
+                          : "border-[#486470] bg-[#324d58] text-slate-400 hover:border-[#5a7880] hover:text-white"
                       }`}
                     >
                       {limit}
@@ -591,7 +591,7 @@ export default function LeadDashboardPage() {
                   <button
                     type="button"
                     onClick={() => setLocationOverride("")}
-                    className="flex items-center gap-1 text-[10px] text-emerald-400 hover:underline"
+                    className="flex items-center gap-1 text-[10px] text-orange-400 hover:underline"
                   >
                     <RotateCcw className="h-2.5 w-2.5" />
                     Auto
@@ -604,15 +604,15 @@ export default function LeadDashboardPage() {
                 value={effectiveLocation}
                 onChange={(e) => setLocationOverride(e.target.value)}
                 placeholder="Hanumangarh"
-                className="w-full rounded-xl border border-[#262626] bg-[#161616] px-3 py-1.5 text-sm text-white placeholder-slate-500 outline-none transition-all focus:border-emerald-500/50"
+                className="w-full rounded-xl border border-[#486470] bg-[#324d58] px-3 py-1.5 text-sm text-white placeholder-slate-500 outline-none transition-all focus:border-orange-400/50"
               />
             </div>
           </div>
 
           {/* Dynamic Sequential Contact Formula Preview */}
-          <div className="rounded-xl border border-[#262626] bg-[#141414] p-3">
+          <div className="rounded-xl border border-[#486470] bg-[#2e4855] p-3">
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-400">
+              <span className="flex items-center gap-1.5 text-xs font-medium text-orange-400">
                 <Compass className="h-3.5 w-3.5" />
                 Dynamic contact name preview
               </span>
@@ -633,7 +633,7 @@ export default function LeadDashboardPage() {
                 htmlFor="pitchTemplate"
                 className="flex items-center gap-1.5 text-xs font-medium text-slate-300"
               >
-                <MessageSquare className="h-3.5 w-3.5 text-emerald-400" />
+                <MessageSquare className="h-3.5 w-3.5 text-orange-400" />
                 WhatsApp pitch template
               </label>
               <div className="flex items-center gap-1">
@@ -642,7 +642,7 @@ export default function LeadDashboardPage() {
                     key={variable}
                     type="button"
                     onClick={() => handleInsertVariable(variable)}
-                    className="rounded bg-[#222222] px-1.5 py-0.5 font-mono text-[10px] text-emerald-400 transition hover:bg-[#2c2c2c] active:scale-[0.98]"
+                    className="rounded bg-[#3f5a66] px-1.5 py-0.5 font-mono text-[10px] text-orange-400 transition hover:bg-[#4d6973] active:scale-[0.98]"
                   >
                     +{variable}
                   </button>
@@ -655,7 +655,7 @@ export default function LeadDashboardPage() {
               value={pitchTemplate}
               onChange={(e) => setPitchTemplate(e.target.value)}
               placeholder="Write your outreach message..."
-              className="w-full resize-none rounded-xl border border-[#262626] bg-[#161616] p-3 text-sm leading-relaxed text-white placeholder-slate-500 outline-none transition-all focus:border-emerald-500/50"
+              className="w-full resize-none rounded-xl border border-[#486470] bg-[#324d58] p-3 text-sm leading-relaxed text-white placeholder-slate-500 outline-none transition-all focus:border-orange-400/50"
             />
           </div>
 
@@ -684,7 +684,7 @@ export default function LeadDashboardPage() {
             <button
               type="submit"
               disabled={isScraping}
-              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-500 py-2.5 px-4 text-sm font-semibold text-black transition-all duration-200 hover:bg-emerald-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-orange-400 py-2.5 px-4 text-sm font-semibold text-black transition-all duration-200 hover:bg-orange-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isScraping ? (
                 <>
@@ -702,16 +702,16 @@ export default function LeadDashboardPage() {
 
           {/* DUAL PLATFORM EXPORT SECTION: APPLE + ANDROID */}
           {leads.length > 0 && (
-            <div className="mt-1 rounded-2xl border border-[#2a2a2a] bg-[#141414] p-3.5 space-y-2.5">
+            <div className="mt-1 rounded-2xl border border-[#4c6872] bg-[#2e4855] p-3.5 space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1.5 text-xs font-semibold text-white">
-                  <Download className="h-3.5 w-3.5 text-emerald-400" />
+                  <Download className="h-3.5 w-3.5 text-orange-400" />
                   Export Contacts (.vcf)
                 </span>
                 <button
                   type="button"
                   onClick={() => setShowAndroidGuide(true)}
-                  className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-emerald-300"
+                  className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-orange-300"
                 >
                   <Info className="h-3 w-3" /> Android Guide
                 </button>
@@ -724,13 +724,13 @@ export default function LeadDashboardPage() {
                   onClick={() => handleTriggerDownload("apple")}
                   className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border p-2.5 text-center transition-all ${
                     downloadSuccessPlatform === "apple"
-                      ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-300"
-                      : "border-[#2c2c2c] bg-[#1a1a1a] text-slate-200 hover:border-slate-500 hover:bg-[#222222] active:scale-[0.98]"
+                      ? "border-orange-400/50 bg-orange-400/15 text-orange-300"
+                      : "border-[#4d6973] bg-[#37535e] text-slate-200 hover:border-slate-500 hover:bg-[#3f5a66] active:scale-[0.98]"
                   }`}
                 >
                   <div className="flex items-center gap-1 text-xs font-semibold">
                     <span>🍎 Apple / Mac</span>
-                    {downloadSuccessPlatform === "apple" && <Check className="h-3.5 w-3.5 text-emerald-400" />}
+                    {downloadSuccessPlatform === "apple" && <Check className="h-3.5 w-3.5 text-orange-400" />}
                   </div>
                   <span className="text-[10px] text-slate-400">Mac Contacts &amp; iCloud</span>
                 </button>
@@ -741,14 +741,14 @@ export default function LeadDashboardPage() {
                   onClick={() => handleTriggerDownload("android")}
                   className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border p-2.5 text-center transition-all ${
                     downloadSuccessPlatform === "android"
-                      ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-300"
-                      : "border-[#2c2c2c] bg-[#1a1a1a] text-slate-200 hover:border-emerald-500/40 hover:bg-[#222222] active:scale-[0.98]"
+                      ? "border-orange-400/50 bg-orange-400/15 text-orange-300"
+                      : "border-[#4d6973] bg-[#37535e] text-slate-200 hover:border-orange-400/40 hover:bg-[#3f5a66] active:scale-[0.98]"
                   }`}
                 >
                   <div className="flex items-center gap-1 text-xs font-semibold">
-                    <Smartphone className="h-3.5 w-3.5 text-emerald-400" />
+                    <Smartphone className="h-3.5 w-3.5 text-orange-400" />
                     <span>Android / Google</span>
-                    {downloadSuccessPlatform === "android" && <Check className="h-3.5 w-3.5 text-emerald-400" />}
+                    {downloadSuccessPlatform === "android" && <Check className="h-3.5 w-3.5 text-orange-400" />}
                   </div>
                   <span className="text-[10px] text-slate-400">Google &amp; Samsung Contacts</span>
                 </button>
@@ -768,9 +768,9 @@ export default function LeadDashboardPage() {
           )}
 
           {/* Safe Outreach Sync Workflow Banner */}
-          <div className="mt-auto rounded-2xl border border-[#222222] bg-[#121212] p-4 text-xs text-slate-400">
+          <div className="mt-auto rounded-2xl border border-[#3f5a66] bg-[#2a4250] p-4 text-xs text-slate-400">
             <div className="flex items-center gap-2 font-medium text-white">
-              <ShieldCheck className="h-4 w-4 text-emerald-400" />
+              <ShieldCheck className="h-4 w-4 text-orange-400" />
               <span>Safe WhatsApp Outreach Architecture</span>
             </div>
             <ul className="mt-2 space-y-1.5 text-[11px] leading-relaxed">
@@ -783,9 +783,9 @@ export default function LeadDashboardPage() {
       </aside>
 
       {/* Right Lead Management Workspace */}
-      <main className="flex min-w-0 flex-1 flex-col bg-[#000000] lg:h-full lg:overflow-hidden">
+      <main className="flex min-w-0 flex-1 flex-col bg-[#1e3540] lg:h-full lg:overflow-hidden">
         {/* Top Header Metrics Bar */}
-        <header className="border-b border-[#262626] bg-[#0c0c0c] px-6 py-4 space-y-3">
+        <header className="border-b border-[#486470] bg-[#253d47] px-6 py-4 space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className="text-base font-semibold tracking-tight text-white">
@@ -806,17 +806,17 @@ export default function LeadDashboardPage() {
                     value={tableFilter}
                     onChange={(e) => setTableFilter(e.target.value)}
                     placeholder="Search leads, phone, title..."
-                    className="w-48 rounded-xl border border-[#262626] bg-[#161616] py-1.5 pr-3 pl-8 text-xs text-white placeholder-slate-500 outline-none transition focus:border-emerald-500/50 sm:w-64"
+                    className="w-48 rounded-xl border border-[#486470] bg-[#324d58] py-1.5 pr-3 pl-8 text-xs text-white placeholder-slate-500 outline-none transition focus:border-orange-400/50 sm:w-64"
                   />
                 </div>
 
-                <div className="flex items-center rounded-xl border border-[#262626] bg-[#161616] p-0.5 text-xs">
+                <div className="flex items-center rounded-xl border border-[#486470] bg-[#324d58] p-0.5 text-xs">
                   <button
                     type="button"
                     onClick={() => setStatusFilter("all")}
                     className={`rounded-lg px-2.5 py-1 text-xs transition ${
                       statusFilter === "all"
-                        ? "bg-[#262626] font-medium text-white"
+                        ? "bg-[#486470] font-medium text-white"
                         : "text-slate-400 hover:text-white"
                     }`}
                   >
@@ -827,7 +827,7 @@ export default function LeadDashboardPage() {
                     onClick={() => setStatusFilter("pending")}
                     className={`rounded-lg px-2.5 py-1 text-xs transition ${
                       statusFilter === "pending"
-                        ? "bg-[#262626] font-medium text-white"
+                        ? "bg-[#486470] font-medium text-white"
                         : "text-slate-400 hover:text-white"
                     }`}
                   >
@@ -838,7 +838,7 @@ export default function LeadDashboardPage() {
                     onClick={() => setStatusFilter("contacted")}
                     className={`rounded-lg px-2.5 py-1 text-xs transition ${
                       statusFilter === "contacted"
-                        ? "bg-[#262626] font-medium text-white"
+                        ? "bg-[#486470] font-medium text-white"
                         : "text-slate-400 hover:text-white"
                     }`}
                   >
@@ -861,10 +861,10 @@ export default function LeadDashboardPage() {
 
           {/* KPI Analytics Cards */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-xl border border-[#222222] bg-[#121212] p-3">
+            <div className="rounded-xl border border-[#3f5a66] bg-[#2a4250] p-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-medium text-slate-400">Scraped Leads</span>
-                <Users className="h-3.5 w-3.5 text-emerald-400" />
+                <Users className="h-3.5 w-3.5 text-orange-400" />
               </div>
               <div className="mt-1 flex items-baseline gap-2">
                 <span className="font-mono text-xl font-semibold text-white">{leads.length}</span>
@@ -876,22 +876,22 @@ export default function LeadDashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-[#222222] bg-[#121212] p-3">
+            <div className="rounded-xl border border-[#3f5a66] bg-[#2a4250] p-3">
               <span className="text-[11px] font-medium text-slate-400">WhatsApp Verified</span>
               <div className="mt-1 flex items-baseline gap-1.5">
-                <span className="font-mono text-xl font-semibold text-emerald-400">{leads.length}</span>
+                <span className="font-mono text-xl font-semibold text-orange-400">{leads.length}</span>
                 <span className="text-[10px] text-slate-500">100% valid</span>
               </div>
             </div>
 
-            <div className="rounded-xl border border-[#222222] bg-[#121212] p-3">
+            <div className="rounded-xl border border-[#3f5a66] bg-[#2a4250] p-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-medium text-slate-400">Outreach Rate</span>
-                <span className="font-mono text-[11px] text-emerald-400">{contactedPercentage}%</span>
+                <span className="font-mono text-[11px] text-orange-400">{contactedPercentage}%</span>
               </div>
-              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#222222]">
+              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[#3f5a66]">
                 <div
-                  className="h-full bg-emerald-500 transition-all duration-500"
+                  className="h-full bg-orange-400 transition-all duration-500"
                   style={{ width: `${contactedPercentage}%` }}
                 />
               </div>
@@ -899,11 +899,11 @@ export default function LeadDashboardPage() {
 
             <div
               onClick={() => setIsKeyModalOpen(true)}
-              className="cursor-pointer rounded-xl border border-[#222222] bg-[#121212] p-3 transition hover:border-[#333333]"
+              className="cursor-pointer rounded-xl border border-[#3f5a66] bg-[#2a4250] p-3 transition hover:border-[#333333]"
             >
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-medium text-slate-400">Apify Free Pool</span>
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                <span className="h-2 w-2 rounded-full bg-orange-400" />
               </div>
               <div className="mt-1 flex items-baseline gap-1.5 font-mono text-xs text-white">
                 <span>{activeKeyInfo?.total ?? 1} Keys Pool</span>
@@ -920,9 +920,9 @@ export default function LeadDashboardPage() {
           {isScraping ? (
             /* SKELETON LOADING STATE */
             <div className="space-y-4">
-              <div className="flex items-center justify-between rounded-2xl border border-[#262626] bg-[#111111] p-4">
+              <div className="flex items-center justify-between rounded-2xl border border-[#486470] bg-[#2a4250] p-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-orange-400 border-t-transparent" />
                   <div>
                     <p className="text-sm font-semibold text-white">
                       Crawling Google Maps for &ldquo;{searchQuery}&rdquo;
@@ -932,24 +932,24 @@ export default function LeadDashboardPage() {
                     </p>
                   </div>
                 </div>
-                <span className="rounded-md border border-[#262626] bg-[#161616] px-2.5 py-1 font-mono text-xs text-slate-400">
+                <span className="rounded-md border border-[#486470] bg-[#324d58] px-2.5 py-1 font-mono text-xs text-slate-400">
                   Target: {maxResults} leads
                 </span>
               </div>
 
-              <div className="rounded-2xl border border-[#262626] bg-[#111111] overflow-hidden divide-y divide-[#262626]">
+              <div className="rounded-2xl border border-[#486470] bg-[#2a4250] overflow-hidden divide-y divide-[#486470]">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div key={i} className="flex items-center justify-between gap-4 p-4 animate-pulse">
                     <div className="flex items-center gap-3">
-                      <div className="h-4 w-6 rounded bg-[#222222]" />
-                      <div className="h-6 w-36 rounded bg-[#222222]" />
+                      <div className="h-4 w-6 rounded bg-[#3f5a66]" />
+                      <div className="h-6 w-36 rounded bg-[#3f5a66]" />
                       <div className="space-y-1">
-                        <div className="h-4 w-40 rounded bg-[#222222]" />
-                        <div className="h-3 w-24 rounded bg-[#181818]" />
+                        <div className="h-4 w-40 rounded bg-[#3f5a66]" />
+                        <div className="h-3 w-24 rounded bg-[#334f5a]" />
                       </div>
                     </div>
-                    <div className="h-4 w-28 rounded bg-[#222222]" />
-                    <div className="h-8 w-28 rounded-xl bg-[#222222]" />
+                    <div className="h-4 w-28 rounded bg-[#3f5a66]" />
+                    <div className="h-8 w-28 rounded-xl bg-[#3f5a66]" />
                   </div>
                 ))}
               </div>
@@ -957,9 +957,9 @@ export default function LeadDashboardPage() {
           ) : leads.length === 0 ? (
             /* EMPTY STATE */
             <div className="flex h-full min-h-[460px] flex-col items-center justify-center">
-              <div className="w-full max-w-xl rounded-2xl border border-[#262626] bg-[#0f0f0f] p-8 text-center shadow-2xl">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-500/30 bg-emerald-950/20">
-                  <Globe className="h-6 w-6 text-emerald-400" />
+              <div className="w-full max-w-xl rounded-2xl border border-[#486470] bg-[#253d47] p-8 text-center shadow-2xl">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/30 bg-orange-950/20">
+                  <Globe className="h-6 w-6 text-orange-400" />
                 </div>
                 <h3 className="text-xl font-semibold tracking-tight text-white">
                   Local Business Lead Generation &amp; WhatsApp Outreach
@@ -971,22 +971,22 @@ export default function LeadDashboardPage() {
 
                 {/* 3 Step Workflow */}
                 <div className="mt-6 grid grid-cols-1 gap-3 text-left sm:grid-cols-3">
-                  <div className="rounded-xl border border-[#262626] bg-[#161616] p-3.5">
-                    <span className="font-mono text-xs font-semibold text-emerald-400">Step 1</span>
+                  <div className="rounded-xl border border-[#486470] bg-[#324d58] p-3.5">
+                    <span className="font-mono text-xs font-semibold text-orange-400">Step 1</span>
                     <p className="mt-1 text-xs font-medium text-white">Scrape Places</p>
                     <p className="mt-1 text-[11px] text-slate-400">
                       Collects validated phone numbers and business names.
                     </p>
                   </div>
-                  <div className="rounded-xl border border-[#262626] bg-[#161616] p-3.5">
-                    <span className="font-mono text-xs font-semibold text-emerald-400">Step 2</span>
+                  <div className="rounded-xl border border-[#486470] bg-[#324d58] p-3.5">
+                    <span className="font-mono text-xs font-semibold text-orange-400">Step 2</span>
                     <p className="mt-1 text-xs font-medium text-white">Sync Contacts</p>
                     <p className="mt-1 text-[11px] text-slate-400">
                       Export .vcf for Apple or Android to save contacts safely.
                     </p>
                   </div>
-                  <div className="rounded-xl border border-[#262626] bg-[#161616] p-3.5">
-                    <span className="font-mono text-xs font-semibold text-emerald-400">Step 3</span>
+                  <div className="rounded-xl border border-[#486470] bg-[#324d58] p-3.5">
+                    <span className="font-mono text-xs font-semibold text-orange-400">Step 3</span>
                     <p className="mt-1 text-xs font-medium text-white">1-Click WhatsApp</p>
                     <p className="mt-1 text-[11px] text-slate-400">
                       Launches WhatsApp Desktop or Web prefilled with your pitch.
@@ -995,7 +995,7 @@ export default function LeadDashboardPage() {
                 </div>
 
                 {/* Quick start queries */}
-                <div className="mt-6 border-t border-[#222222] pt-4 text-left">
+                <div className="mt-6 border-t border-[#3f5a66] pt-4 text-left">
                   <span className="text-xs font-medium text-slate-400">Try these instant searches:</span>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {QUICK_SEARCH_PROMPTS.map((prompt) => (
@@ -1003,10 +1003,10 @@ export default function LeadDashboardPage() {
                         key={prompt}
                         type="button"
                         onClick={() => setSearchQuery(prompt)}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#262626] bg-[#161616] px-3 py-1.5 text-xs text-slate-300 transition hover:border-[#383838] hover:text-white"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#486470] bg-[#324d58] px-3 py-1.5 text-xs text-slate-300 transition hover:border-[#5a7880] hover:text-white"
                       >
                         <span>{prompt}</span>
-                        <ArrowRight className="h-3 w-3 text-emerald-400" />
+                        <ArrowRight className="h-3 w-3 text-orange-400" />
                       </button>
                     ))}
                   </div>
@@ -1015,7 +1015,7 @@ export default function LeadDashboardPage() {
             </div>
           ) : filteredLeads.length === 0 ? (
             /* NO SEARCH MATCHES */
-            <div className="flex h-64 flex-col items-center justify-center rounded-2xl border border-[#262626] bg-[#111111] text-center">
+            <div className="flex h-64 flex-col items-center justify-center rounded-2xl border border-[#486470] bg-[#2a4250] text-center">
               <Filter className="h-8 w-8 text-slate-500 mb-2" />
               <p className="text-sm font-medium text-white">No leads match filter</p>
               <p className="mt-1 text-xs text-slate-400">
@@ -1027,14 +1027,14 @@ export default function LeadDashboardPage() {
                   setTableFilter("");
                   setStatusFilter("all");
                 }}
-                className="mt-3 rounded-lg border border-[#262626] bg-[#161616] px-3 py-1.5 text-xs font-medium text-white hover:border-[#383838]"
+                className="mt-3 rounded-lg border border-[#486470] bg-[#324d58] px-3 py-1.5 text-xs font-medium text-white hover:border-[#5a7880]"
               >
                 Reset filters
               </button>
             </div>
           ) : (
             /* LEADS DISPLAY: RESPONSIVE DESKTOP TABLE & MOBILE CARDS */
-            <div className="rounded-2xl border border-[#262626] bg-[#111111] overflow-hidden">
+            <div className="rounded-2xl border border-[#486470] bg-[#2a4250] overflow-hidden">
               {/* DESKTOP TABLE (md+): Perfectly aligned in 1 window, NO horizontal scroll needed */}
               <div className="hidden md:block overflow-hidden">
                 <table className="w-full border-collapse text-left text-sm table-fixed">
@@ -1045,7 +1045,7 @@ export default function LeadDashboardPage() {
                     <col className="w-44" />
                     <col className="w-44" />
                   </colgroup>
-                  <thead className="border-b border-[#262626] bg-[#161616] text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                  <thead className="border-b border-[#486470] bg-[#324d58] text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     <tr>
                       <th className="px-3 py-3 text-center">#</th>
                       <th className="px-3.5 py-3">Contact Name (.vcf)</th>
@@ -1054,7 +1054,7 @@ export default function LeadDashboardPage() {
                       <th className="px-3.5 py-3 text-right">Outreach Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#222222]">
+                  <tbody className="divide-y divide-[#3f5a66]">
                     {filteredLeads.map(({ lead, index }) => {
                       const assignedName = buildSequentialContactName(
                         lead.title,
@@ -1074,7 +1074,7 @@ export default function LeadDashboardPage() {
                         <tr
                           key={lead.id}
                           className={`group transition-colors ${
-                            isOpened ? "bg-emerald-950/15" : "hover:bg-[#161616]"
+                            isOpened ? "bg-orange-950/15" : "hover:bg-[#324d58]"
                           }`}
                         >
                           <td className="px-3 py-3 font-mono text-xs text-slate-500 text-center">
@@ -1082,7 +1082,7 @@ export default function LeadDashboardPage() {
                           </td>
 
                           <td className="px-3.5 py-3">
-                            <span className="inline-flex items-center rounded-lg border border-emerald-500/30 bg-emerald-950/20 px-2.5 py-1 font-mono text-xs font-medium text-emerald-300">
+                            <span className="inline-flex items-center rounded-lg border border-orange-400/30 bg-orange-950/20 px-2.5 py-1 font-mono text-xs font-medium text-orange-300">
                               {assignedName}
                             </span>
                           </td>
@@ -1095,7 +1095,7 @@ export default function LeadDashboardPage() {
                                   href={lead.googleMapsUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-slate-500 hover:text-emerald-400 shrink-0"
+                                  className="text-slate-500 hover:text-orange-400 shrink-0"
                                   title="View on Google Maps"
                                 >
                                   <ExternalLink className="h-3 w-3" />
@@ -1135,11 +1135,11 @@ export default function LeadDashboardPage() {
                               <button
                                 type="button"
                                 onClick={() => handleCopyPhone(lead)}
-                                className="rounded p-1 text-slate-500 hover:bg-[#222222] hover:text-white"
+                                className="rounded p-1 text-slate-500 hover:bg-[#3f5a66] hover:text-white"
                                 title="Copy phone number"
                               >
                                 {isCopied ? (
-                                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                                  <Check className="h-3.5 w-3.5 text-orange-400" />
                                 ) : (
                                   <Copy className="h-3.5 w-3.5" />
                                 )}
@@ -1154,8 +1154,8 @@ export default function LeadDashboardPage() {
                                 onClick={() => handleOpenWhatsAppDesktop(lead)}
                                 className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg py-1.5 px-3 text-xs font-semibold transition active:scale-[0.98] ${
                                   isOpened
-                                    ? "border border-emerald-500/40 bg-[#161616] text-emerald-300 hover:border-emerald-500/60"
-                                    : "bg-emerald-500 text-black hover:bg-emerald-400"
+                                    ? "border border-orange-400/40 bg-[#324d58] text-orange-300 hover:border-orange-400/60"
+                                    : "bg-orange-400 text-black hover:bg-orange-400"
                                 }`}
                                 title="Launch native WhatsApp Desktop protocol"
                               >
@@ -1175,7 +1175,7 @@ export default function LeadDashboardPage() {
                               <button
                                 type="button"
                                 onClick={() => handleOpenWhatsAppWeb(lead)}
-                                className="rounded-lg border border-[#2a2a2a] bg-[#161616] p-1.5 text-slate-400 hover:border-[#383838] hover:text-white"
+                                className="rounded-lg border border-[#4c6872] bg-[#324d58] p-1.5 text-slate-400 hover:border-[#5a7880] hover:text-white"
                                 title="Open WhatsApp Web in new tab"
                               >
                                 <Globe className="h-3.5 w-3.5" />
@@ -1190,7 +1190,7 @@ export default function LeadDashboardPage() {
               </div>
 
               {/* MOBILE CARDS (< md): Touch-friendly, zero horizontal scroll */}
-              <div className="block md:hidden divide-y divide-[#222222]">
+              <div className="block md:hidden divide-y divide-[#3f5a66]">
                 {filteredLeads.map(({ lead, index }) => {
                   const assignedName = buildSequentialContactName(
                     lead.title,
@@ -1204,7 +1204,7 @@ export default function LeadDashboardPage() {
                     <div
                       key={lead.id}
                       className={`p-4 space-y-2.5 transition-colors ${
-                        isOpened ? "bg-emerald-950/15" : "bg-[#111111]"
+                        isOpened ? "bg-orange-950/15" : "bg-[#2a4250]"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -1212,12 +1212,12 @@ export default function LeadDashboardPage() {
                           <span className="font-mono text-xs text-slate-500">
                             #{String(index + 1).padStart(2, "0")}
                           </span>
-                          <span className="inline-flex items-center rounded-md border border-emerald-500/30 bg-emerald-950/20 px-2 py-0.5 font-mono text-xs font-medium text-emerald-300">
+                          <span className="inline-flex items-center rounded-md border border-orange-400/30 bg-orange-950/20 px-2 py-0.5 font-mono text-xs font-medium text-orange-300">
                             {assignedName}
                           </span>
                         </div>
                         {isOpened && (
-                          <span className="inline-flex items-center gap-1 rounded bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+                          <span className="inline-flex items-center gap-1 rounded bg-orange-400/10 px-2 py-0.5 text-[10px] font-medium text-orange-400">
                             <CheckCircle2 className="h-3 w-3" /> Done
                           </span>
                         )}
@@ -1231,7 +1231,7 @@ export default function LeadDashboardPage() {
                               href={lead.googleMapsUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-slate-500 hover:text-emerald-400"
+                              className="text-slate-500 hover:text-orange-400"
                             >
                               <ExternalLink className="h-3 w-3" />
                             </a>
@@ -1251,7 +1251,7 @@ export default function LeadDashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between border-t border-[#222222] pt-2.5">
+                      <div className="flex items-center justify-between border-t border-[#3f5a66] pt-2.5">
                         <div className="flex items-center gap-1.5 font-mono text-xs text-slate-200">
                           <Phone className="h-3 w-3 text-slate-500" />
                           <span>{lead.phone}</span>
@@ -1261,7 +1261,7 @@ export default function LeadDashboardPage() {
                             className="p-1 text-slate-400 hover:text-white"
                           >
                             {isCopied ? (
-                              <Check className="h-3.5 w-3.5 text-emerald-400" />
+                              <Check className="h-3.5 w-3.5 text-orange-400" />
                             ) : (
                               <Copy className="h-3.5 w-3.5" />
                             )}
@@ -1274,8 +1274,8 @@ export default function LeadDashboardPage() {
                             onClick={() => handleOpenWhatsAppDesktop(lead)}
                             className={`inline-flex items-center gap-1 rounded-lg py-1.5 px-3 text-xs font-semibold ${
                               isOpened
-                                ? "border border-emerald-500/40 bg-[#161616] text-emerald-300"
-                                : "bg-emerald-500 text-black hover:bg-emerald-400"
+                                ? "border border-orange-400/40 bg-[#324d58] text-orange-300"
+                                : "bg-orange-400 text-black hover:bg-orange-400"
                             }`}
                           >
                             <ExternalLink className="h-3.5 w-3.5" />
@@ -1284,7 +1284,7 @@ export default function LeadDashboardPage() {
                           <button
                             type="button"
                             onClick={() => handleOpenWhatsAppWeb(lead)}
-                            className="rounded-lg border border-[#2a2a2a] bg-[#161616] p-1.5 text-slate-400"
+                            className="rounded-lg border border-[#4c6872] bg-[#324d58] p-1.5 text-slate-400"
                           >
                             <Globe className="h-3.5 w-3.5" />
                           </button>
@@ -1302,10 +1302,10 @@ export default function LeadDashboardPage() {
       {/* API KEY POOL MODAL */}
       {isKeyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-[#2a2a2a] bg-[#121212] p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-[#222222] pb-3">
+          <div className="w-full max-w-lg rounded-2xl border border-[#4c6872] bg-[#2a4250] p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#3f5a66] pb-3">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-400/10 text-orange-400">
                   <Key className="h-4 w-4" />
                 </div>
                 <div>
@@ -1316,13 +1316,13 @@ export default function LeadDashboardPage() {
               <button
                 type="button"
                 onClick={() => setIsKeyModalOpen(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-[#222222] hover:text-white"
+                className="rounded-lg p-1 text-slate-400 hover:bg-[#3f5a66] hover:text-white"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-950/20 p-3 text-xs text-emerald-300 leading-relaxed">
+            <div className="rounded-xl border border-orange-400/20 bg-orange-950/20 p-3 text-xs text-orange-300 leading-relaxed">
               <strong>How Free Keys Failover Works:</strong> Each free Apify key includes $5/month.
               When one free key runs out of credits or hits a rate limit, LeadFlow automatically
               switches to the next key in this pool without interrupting your scraping!
@@ -1339,19 +1339,19 @@ export default function LeadDashboardPage() {
                   value={keyInputText}
                   onChange={(e) => setKeyInputText(e.target.value)}
                   placeholder="apify_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                  className="flex-1 rounded-xl border border-[#262626] bg-[#161616] px-3.5 py-2 font-mono text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500/50"
+                  className="flex-1 rounded-xl border border-[#486470] bg-[#324d58] px-3.5 py-2 font-mono text-xs text-white placeholder-slate-500 outline-none focus:border-orange-400/50"
                 />
                 <button
                   type="button"
                   disabled={isValidatingKey || !keyInputText.trim()}
                   onClick={handleAddSingleKey}
-                  className="rounded-xl bg-emerald-500 px-4 py-2 text-xs font-semibold text-black hover:bg-emerald-400 disabled:opacity-50"
+                  className="rounded-xl bg-orange-400 px-4 py-2 text-xs font-semibold text-black hover:bg-orange-400 disabled:opacity-50"
                 >
                   {isValidatingKey ? "Checking..." : "Verify & Add"}
                 </button>
               </div>
               {keyValidationStatus && (
-                <p className="text-xs text-emerald-400">{keyValidationStatus}</p>
+                <p className="text-xs text-orange-400">{keyValidationStatus}</p>
               )}
             </div>
 
@@ -1360,19 +1360,19 @@ export default function LeadDashboardPage() {
               <span className="text-xs font-medium text-slate-300">
                 Configured Key Pool ({customKeys.length} browser keys + env keys):
               </span>
-              <div className="max-h-48 overflow-y-auto rounded-xl border border-[#222222] bg-[#161616] p-2 divide-y divide-[#222222]">
+              <div className="max-h-48 overflow-y-auto rounded-xl border border-[#3f5a66] bg-[#324d58] p-2 divide-y divide-[#3f5a66]">
                 <div className="flex items-center justify-between p-2 text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    <span className="h-2 w-2 rounded-full bg-orange-400" />
                     <span className="font-mono text-slate-300">Primary Key (.env.local)</span>
                   </div>
-                  <span className="rounded bg-[#222222] px-2 py-0.5 text-[10px] text-slate-400">System Key</span>
+                  <span className="rounded bg-[#3f5a66] px-2 py-0.5 text-[10px] text-slate-400">System Key</span>
                 </div>
 
                 {customKeys.map((key, idx) => (
                   <div key={key} className="flex items-center justify-between p-2 text-xs">
                     <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                      <span className="h-2 w-2 rounded-full bg-orange-400" />
                       <span className="font-mono text-slate-300">
                         Key #{idx + 2}: {key.slice(0, 14)}...{key.slice(-4)}
                       </span>
@@ -1400,7 +1400,7 @@ export default function LeadDashboardPage() {
               <button
                 type="button"
                 onClick={() => setIsKeyModalOpen(false)}
-                className="rounded-xl bg-[#222222] px-4 py-2 text-xs font-medium text-white hover:bg-[#2c2c2c]"
+                className="rounded-xl bg-[#3f5a66] px-4 py-2 text-xs font-medium text-white hover:bg-[#4d6973]"
               >
                 Done
               </button>
@@ -1412,16 +1412,16 @@ export default function LeadDashboardPage() {
       {/* ANDROID IMPORT GUIDE MODAL */}
       {showAndroidGuide && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-[#2a2a2a] bg-[#121212] p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-[#222222] pb-3">
+          <div className="w-full max-w-md rounded-2xl border border-[#4c6872] bg-[#2a4250] p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#3f5a66] pb-3">
               <div className="flex items-center gap-2">
-                <Smartphone className="h-5 w-5 text-emerald-400" />
+                <Smartphone className="h-5 w-5 text-orange-400" />
                 <h3 className="text-sm font-semibold text-white">How to Sync on Android</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAndroidGuide(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-[#222222] hover:text-white"
+                className="rounded-lg p-1 text-slate-400 hover:bg-[#3f5a66] hover:text-white"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -1429,7 +1429,7 @@ export default function LeadDashboardPage() {
 
             <ol className="space-y-3 text-xs text-slate-300">
               <li className="flex items-start gap-2.5">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-[11px] font-bold text-emerald-400">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-orange-400/20 text-[11px] font-bold text-orange-400">
                   1
                 </span>
                 <span>
@@ -1437,7 +1437,7 @@ export default function LeadDashboardPage() {
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-[11px] font-bold text-emerald-400">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-orange-400/20 text-[11px] font-bold text-orange-400">
                   2
                 </span>
                 <span>
@@ -1445,7 +1445,7 @@ export default function LeadDashboardPage() {
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-[11px] font-bold text-emerald-400">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-orange-400/20 text-[11px] font-bold text-orange-400">
                   3
                 </span>
                 <span>
@@ -1454,7 +1454,7 @@ export default function LeadDashboardPage() {
                 </span>
               </li>
               <li className="flex items-start gap-2.5">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-[11px] font-bold text-emerald-400">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-orange-400/20 text-[11px] font-bold text-orange-400">
                   4
                 </span>
                 <span>
@@ -1467,7 +1467,7 @@ export default function LeadDashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowAndroidGuide(false)}
-                className="rounded-xl bg-emerald-500 px-4 py-2 text-xs font-semibold text-black hover:bg-emerald-400"
+                className="rounded-xl bg-orange-400 px-4 py-2 text-xs font-semibold text-black hover:bg-orange-400"
               >
                 Got it
               </button>

@@ -1,10 +1,20 @@
 @import "tailwindcss";
 
+/* ── Burnt Peach + Deep Steel Blue theme override ── */
+@theme {
+  /* Burnt Peach #FE8254 as the orange scale */
+  --color-orange-200: #ffd0bc;
+  --color-orange-300: #ffb196;
+  --color-orange-400: #FE8254;
+  --color-orange-500: #fe6e38;
+  --color-orange-950: #2d150c;
+}
+
 @layer base {
   html,
   body {
     height: 100%;
-    background-color: #000000;
+    background-color: #1e3540;
     color: #f1f5f9;
     color-scheme: dark;
   }
@@ -30,16 +40,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #000000;
+  background: #1e3540;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #272727;
+  background: #496570;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #313131;
+  background: #547076;
 }
 
 @media (prefers-reduced-motion: reduce) {

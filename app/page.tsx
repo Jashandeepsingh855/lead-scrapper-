@@ -792,8 +792,8 @@ export default function LeadDashboardPage() {
       {/* Right Lead Management Workspace */}
       <main className="flex min-w-0 flex-1 flex-col bg-[#1e3540] lg:h-full lg:overflow-hidden">
         {/* Top Header Metrics Bar */}
-        <header className="border-b border-[#486470] bg-[#253d47] px-6 py-4 space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+        <header className="border-b border-[#486470] bg-[#253d47] px-4 py-3 space-y-3 sm:px-6 sm:py-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 className="text-base font-semibold tracking-tight text-white">
                 Outreach Dashboard
@@ -805,69 +805,73 @@ export default function LeadDashboardPage() {
 
             {/* Quick Filter Inputs */}
             {leads.length > 0 && (
-              <div className="flex items-center gap-2">
-                <div className="relative">
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                {/* Search box — full width on mobile */}
+                <div className="relative w-full sm:w-48 md:w-56">
                   <Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" />
                   <input
                     type="text"
                     value={tableFilter}
                     onChange={(e) => setTableFilter(e.target.value)}
                     placeholder="Search leads, phone, title..."
-                    className="w-48 rounded-xl border border-[#486470] bg-[#324d58] py-1.5 pr-3 pl-8 text-xs text-white placeholder-slate-500 outline-none transition focus:border-orange-400/50 sm:w-64"
+                    className="w-full rounded-xl border border-[#486470] bg-[#324d58] py-1.5 pr-3 pl-8 text-xs text-white placeholder-slate-500 outline-none transition focus:border-orange-400/50"
                   />
                 </div>
 
-                <div className="flex items-center rounded-xl border border-[#486470] bg-[#324d58] p-0.5 text-xs">
+                {/* Filter tabs + Clear — same row */}
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-1 items-center rounded-xl border border-[#486470] bg-[#324d58] p-0.5 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilter("all")}
+                      className={`flex-1 rounded-lg px-2 py-1 text-xs transition ${
+                        statusFilter === "all"
+                          ? "bg-[#486470] font-medium text-white"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      All ({leads.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilter("pending")}
+                      className={`flex-1 rounded-lg px-2 py-1 text-xs transition ${
+                        statusFilter === "pending"
+                          ? "bg-[#486470] font-medium text-white"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      Pending ({leads.length - contactedCount})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilter("contacted")}
+                      className={`flex-1 rounded-lg px-2 py-1 text-xs transition ${
+                        statusFilter === "contacted"
+                          ? "bg-[#486470] font-medium text-white"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      Done ({contactedCount})
+                    </button>
+                  </div>
+
                   <button
                     type="button"
-                    onClick={() => setStatusFilter("all")}
-                    className={`rounded-lg px-2.5 py-1 text-xs transition ${
-                      statusFilter === "all"
-                        ? "bg-[#486470] font-medium text-white"
-                        : "text-slate-400 hover:text-white"
-                    }`}
+                    onClick={handleClearLeads}
+                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-rose-500/25 bg-rose-500/10 p-2 text-xs font-medium text-rose-300 transition-all hover:border-rose-500/40 hover:bg-rose-500/20 active:scale-[0.98] sm:px-3 sm:py-1.5"
+                    title="Clear leads queue and remove from localStorage"
                   >
-                    All ({leads.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setStatusFilter("pending")}
-                    className={`rounded-lg px-2.5 py-1 text-xs transition ${
-                      statusFilter === "pending"
-                        ? "bg-[#486470] font-medium text-white"
-                        : "text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    Pending ({leads.length - contactedCount})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setStatusFilter("contacted")}
-                    className={`rounded-lg px-2.5 py-1 text-xs transition ${
-                      statusFilter === "contacted"
-                        ? "bg-[#486470] font-medium text-white"
-                        : "text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    Done ({contactedCount})
+                    <Trash2 className="h-3.5 w-3.5 text-rose-400" />
+                    <span className="hidden sm:inline">Clear</span>
                   </button>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={handleClearLeads}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-rose-500/25 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-300 transition-all hover:border-rose-500/40 hover:bg-rose-500/20 active:scale-[0.98]"
-                  title="Clear leads queue and remove from localStorage"
-                >
-                  <Trash2 className="h-3.5 w-3.5 text-rose-400" />
-                  <span className="hidden sm:inline">Clear Leads</span>
-                </button>
               </div>
             )}
           </div>
 
           {/* KPI Analytics Cards */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
             <div className="rounded-xl border border-[#3f5a66] bg-[#2a4250] p-3">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-medium text-slate-400">Scraped Leads</span>
@@ -906,16 +910,16 @@ export default function LeadDashboardPage() {
 
             <div
               onClick={() => setIsKeyModalOpen(true)}
-              className="cursor-pointer rounded-xl border border-[#3f5a66] bg-[#2a4250] p-3 transition hover:border-[#333333]"
+              className="cursor-pointer rounded-xl border border-[#3f5a66] bg-[#2a4250] p-3 transition hover:border-[#486470]"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-slate-400">Apify Free Pool</span>
-                <span className="h-2 w-2 rounded-full bg-orange-400" />
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[11px] font-medium text-slate-400 truncate">Apify Pool</span>
+                <span className="h-2 w-2 shrink-0 rounded-full bg-orange-400" />
               </div>
-              <div className="mt-1 flex items-baseline gap-1.5 font-mono text-xs text-white">
-                <span>{activeKeyInfo?.total ?? 1} Keys Pool</span>
-                <span className="text-[10px] text-slate-500 truncate">
-                  ({activeKeyInfo?.masked ? activeKeyInfo.masked.slice(0, 10) : "Active"})
+              <div className="mt-1 font-mono text-xs text-white">
+                <span className="font-semibold">{activeKeyInfo?.total ?? 1} Keys</span>
+                <span className="block text-[10px] text-slate-500 truncate">
+                  {activeKeyInfo?.masked ? activeKeyInfo.masked.slice(0, 12) : "Active"}
                 </span>
               </div>
             </div>
@@ -1221,13 +1225,13 @@ export default function LeadDashboardPage() {
                       }`}
                     >
                       {/* Row 1: Index + Done badge */}
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="shrink-0 font-mono text-xs text-slate-500">
-                            #{String(index + 1).padStart(2, "0")}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex min-w-0 flex-1 flex-col gap-1">
+                          <span className="font-mono text-[10px] text-slate-500">
+                            #{String(index + 1).padStart(2, "0")} · Contact
                           </span>
-                          {/* Contact name — wraps on small screens */}
-                          <span className="inline-flex items-center rounded-md border border-orange-400/30 bg-orange-950/20 px-2 py-0.5 font-mono text-xs font-medium text-orange-300 break-all leading-snug">
+                          {/* Contact name — truncates cleanly on small screens */}
+                          <span className="inline-block max-w-full truncate rounded-md border border-orange-400/30 bg-orange-950/20 px-2 py-0.5 font-mono text-xs font-medium text-orange-300" title={assignedName}>
                             {assignedName}
                           </span>
                         </div>

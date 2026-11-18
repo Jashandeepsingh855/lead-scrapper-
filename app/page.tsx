@@ -541,33 +541,36 @@ export default function LeadDashboardPage() {
 
           {/* Grid: Max Results (Manual Number Input + Preset Chips) + Detected Location */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between">
-                <label htmlFor="maxResults" className="text-xs font-medium text-slate-300">
-                  Max leads count
-                </label>
-                <span className="text-[10px] text-orange-400 font-medium">✏️ Type any number</span>
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-medium text-slate-300">Max leads count</label>
+
+              {/* Custom number row — labelled separately */}
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-orange-400">
+                  ✏ Custom (type here)
+                </span>
+                <input
+                  id="maxResults"
+                  type="number"
+                  min={1}
+                  max={200}
+                  value={maxResults || ""}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    setMaxResults(Number.isNaN(val) ? 0 : Math.max(1, Math.min(val, 200)));
+                  }}
+                  placeholder="e.g. 30"
+                  className="w-full rounded-xl border-2 border-orange-400/60 bg-[#253d47] px-3 py-2 font-mono text-sm font-semibold text-white placeholder-slate-500 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
+                  title="Type any custom number of leads (1-200)"
+                />
               </div>
-              <div className="flex items-center gap-1.5">
-                {/* Custom number input — clearly editable */}
-                <div className="relative flex shrink-0 items-center">
-                  <input
-                    id="maxResults"
-                    type="number"
-                    min={1}
-                    max={200}
-                    value={maxResults || ""}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value, 10);
-                      setMaxResults(Number.isNaN(val) ? 0 : Math.max(1, Math.min(val, 200)));
-                    }}
-                    placeholder="20"
-                    className="w-20 rounded-xl border-2 border-orange-400/50 bg-[#324d58] px-2.5 py-1.5 text-center font-mono text-sm font-semibold text-white placeholder-slate-400 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
-                    title="Type any custom number of leads (1-200)"
-                  />
-                </div>
-                {/* Quick-select preset chips */}
-                <div className="flex flex-1 items-center gap-1">
+
+              {/* Quick-select preset chips — labelled separately */}
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                  Quick select
+                </span>
+                <div className="flex items-center gap-1.5">
                   {PRESET_LIMITS.map((limit) => (
                     <button
                       key={limit}
@@ -584,9 +587,6 @@ export default function LeadDashboardPage() {
                   ))}
                 </div>
               </div>
-              <p className="text-[10px] text-slate-500 leading-tight">
-                Or type a custom number in the box above (1–200)
-              </p>
             </div>
 
             <div className="flex flex-col gap-1.5">

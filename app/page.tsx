@@ -16,7 +16,6 @@ import {
   Globe,
   Info,
   Key,
-  Layers,
   MapPin,
   MessageSquare,
   Phone,
@@ -50,6 +49,7 @@ import {
   filterByStatus,
   scrapedToCRM,
   sortByLastUpdated,
+  syncLeadToSheet,
 } from "@/lib/crm";
 import CRMTable from "@/components/CRMTable";
 
@@ -147,6 +147,145 @@ export default function LeadDashboardPage() {
     keyRotated?: boolean;
     rotationMessage?: string;
   } | null>(null);
+
+  // ── CRM Pipeline State ──────────────────────────────────────────────────
+  const [viewMode, setViewMode] = useState<"scraper" | "crm">("scraper");
+  const [crmLeads, setCrmLeads] = useState<CRMLead[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("leadflow_crm_leads");
+        if (saved) {
+          const parsed = JSON.parse(saved) as CRMLead[];
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return [];
+  });
+  const [crmCityFilter, setCrmCityFilter] = useState<string>("all");
+  const [crmStatusFilter, setCrmStatusFilter] = useState<CRMStatusFilter>("all");
+  const [crmSearch, setCrmSearch] = useState<string>("");
+  const [crmSortMode, setCrmSortMode] = useState<"recent" | "progress">("recent");
+  const [isSyncingSheet, setIsSyncingSheet] = useState<boolean>(false);
+  const [sheetSyncStatus, setSheetSyncStatus] = useState<string | null>(null);
+
+  // Sync crmLeads to localStorage
+  useEffect(() => {
+    try {
+      if (crmLeads.length > 0) {
+        localStorage.setItem("leadflow_crm_leads", JSON.stringify(crmLeads));
+      }
+    } catch {}
+  }, [crmLeads]);
+
+  // Load from Google Sheet on start
+  useEffect(() => {
+    fetch("/api/leads")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.leads && Array.isArray(data.leads) && data.leads.length > 0) {
+          setCrmLeads((prev) => {
+            const map = new Map<string, CRMLead>();
+            prev.forEach((l) => map.set(l.id || l.contact, l));
+            (data.leads as CRMLead[]).forEach((l) => {
+              const k = l.id || l.contact;
+              map.set(k, { ...(map.get(k) || {}), ...l });
+            });
+            return Array.from(map.values());
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  function handleUpdateCRMLead(id: string, patch: Partial<CRMLead>) {
+    setCrmLeads((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, ...patch, last_updated: new Date().toISOString() } : l))
+    );
+  }
+
+  function handleClearCRM() {
+    if (typeof window !== "undefined" && window.confirm("Clear all CRM leads from local storage?")) {
+      setCrmLeads([]);
+      try {
+        localStorage.removeItem("leadflow_crm_leads");
+      } catch {}
+    }
+  }
+
+  async function handleManualSheetSync() {
+    setIsSyncingSheet(true);
+    setSheetSyncStatus(null);
+    try {
+      const res = await fetch("/api/leads");
+      if (!res.ok) throw new Error("Could not reach Google Sheet endpoint");
+      const data = await res.json();
+      if (data?.leads && Array.isArray(data.leads)) {
+        setCrmLeads((prev) => {
+          const map = new Map<string, CRMLead>();
+          prev.forEach((l) => map.set(l.id || l.contact, l));
+          (data.leads as CRMLead[]).forEach((l) => {
+            const k = l.id || l.contact;
+            map.set(k, { ...(map.get(k) || {}), ...l });
+          });
+          return Array.from(map.values());
+        });
+        setSheetSyncStatus(`Synced ${data.leads.length} leads with Google Sheet!`);
+      } else {
+        setSheetSyncStatus("Connected to Google Sheet (0 leads found).");
+      }
+    } catch (err) {
+      setSheetSyncStatus(err instanceof Error ? err.message : "Sync error");
+    } finally {
+      setIsSyncingSheet(false);
+      setTimeout(() => setSheetSyncStatus(null), 4000);
+    }
+  }
+
+  const crmCities = useMemo(() => {
+    const s = new Set<string>();
+    for (const l of crmLeads) {
+      if (l.city && l.city.trim()) s.add(l.city.trim());
+    }
+    return Array.from(s).sort();
+  }, [crmLeads]);
+
+  const crmCounts = useMemo(() => {
+    return {
+      all: crmLeads.length,
+      ready: filterByStatus(crmLeads, "ready").length,
+      follow_up: filterByStatus(crmLeads, "follow_up").length,
+      active_replies: filterByStatus(crmLeads, "active_replies").length,
+      in_production: filterByStatus(crmLeads, "in_production").length,
+      completed: filterByStatus(crmLeads, "completed").length,
+    };
+  }, [crmLeads]);
+
+  const filteredCRMLeads = useMemo(() => {
+    let list = filterByStatus(crmLeads, crmStatusFilter);
+    if (crmCityFilter !== "all") {
+      list = list.filter((l) => l.city.toLowerCase() === crmCityFilter.toLowerCase());
+    }
+    const q = crmSearch.trim().toLowerCase();
+    if (q) {
+      list = list.filter(
+        (l) =>
+          l.business_name.toLowerCase().includes(q) ||
+          l.contact.toLowerCase().includes(q) ||
+          l.city.toLowerCase().includes(q) ||
+          l.niche.toLowerCase().includes(q) ||
+          (l.notes && l.notes.toLowerCase().includes(q))
+      );
+    }
+    if (crmSortMode === "recent") {
+      return sortByLastUpdated(list);
+    }
+    return [...list].sort((a, b) => {
+      const pa = [a.msg_sent, a.replied, a.demo_sent, a.details_received, a.in_progress, a.delivered].filter(Boolean).length;
+      const pb = [b.msg_sent, b.replied, b.demo_sent, b.details_received, b.in_progress, b.delivered].filter(Boolean).length;
+      return pb - pa;
+    });
+  }, [crmLeads, crmStatusFilter, crmCityFilter, crmSearch, crmSortMode]);
 
   // Filtering & Status State
   const [tableFilter, setTableFilter] = useState("");
@@ -366,6 +505,26 @@ export default function LeadDashboardPage() {
         filteredOut: data.filteredOut,
       });
 
+      // ── Push into Multi-City CRM & Sync to Google Sheet ──
+      if (data.leads.length > 0) {
+        const freshCRM = data.leads.map((l) => scrapedToCRM(l, trimmedQuery));
+        setCrmLeads((prev) => {
+          const existingIds = new Set(prev.map((p) => p.id));
+          const existingContacts = new Set(prev.map((p) => p.contact));
+          const toAdd = freshCRM.filter(
+            (item) => !existingIds.has(item.id) && !existingContacts.has(item.contact)
+          );
+          if (toAdd.length > 0) {
+            // Background sync to Google Sheet
+            appendLeadsToSheet(toAdd);
+            setSheetSyncStatus(`✓ Appending ${toAdd.length} new leads to Google Sheet`);
+            setTimeout(() => setSheetSyncStatus(null), 4000);
+            return [...toAdd, ...prev];
+          }
+          return prev;
+        });
+      }
+
       if (data.totalKeysConfigured) {
         setActiveKeyInfo({
           index: data.activeKeyIndex ?? 0,
@@ -409,6 +568,27 @@ export default function LeadDashboardPage() {
     );
 
     setOpenedIds((prev) => new Set([...prev, lead.id]));
+
+    // Auto-tick Stage 1 (Msg Sent) & sync to Google Sheet
+    const now = new Date().toISOString();
+    handleUpdateCRMLead(lead.id, { msg_sent: true, msg_sent_at: now });
+    syncLeadToSheet({
+      id: lead.id,
+      business_name: lead.title,
+      city: effectiveLocation,
+      niche: "Business",
+      contact: lead.whatsappPhone || lead.phone,
+      msg_sent: true,
+      replied: false,
+      demo_sent: false,
+      details_received: false,
+      in_progress: false,
+      delivered: false,
+      notes: "",
+      msg_sent_at: now,
+      last_updated: now,
+    });
+
     window.location.href = protocolUrl;
   }
 
@@ -425,6 +605,27 @@ export default function LeadDashboardPage() {
     );
 
     setOpenedIds((prev) => new Set([...prev, lead.id]));
+
+    // Auto-tick Stage 1 (Msg Sent) & sync to Google Sheet
+    const now = new Date().toISOString();
+    handleUpdateCRMLead(lead.id, { msg_sent: true, msg_sent_at: now });
+    syncLeadToSheet({
+      id: lead.id,
+      business_name: lead.title,
+      city: effectiveLocation,
+      niche: "Business",
+      contact: lead.whatsappPhone || lead.phone,
+      msg_sent: true,
+      replied: false,
+      demo_sent: false,
+      details_received: false,
+      in_progress: false,
+      delivered: false,
+      notes: "",
+      msg_sent_at: now,
+      last_updated: now,
+    });
+
     window.open(webUrl, "_blank", "noopener,noreferrer");
   }
 
@@ -507,10 +708,53 @@ export default function LeadDashboardPage() {
           </div>
         )}
 
+        {/* View Mode Switcher Tabs */}
+        <div className="flex border-b border-[#486470] bg-[#2a4250] p-1.5 gap-1.5">
+          <button
+            type="button"
+            onClick={() => setViewMode("scraper")}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition ${
+              viewMode === "scraper"
+                ? "bg-orange-400 text-black shadow-sm"
+                : "text-slate-300 hover:bg-[#324d58] hover:text-white"
+            }`}
+          >
+            <Search className="h-3.5 w-3.5" />
+            <span>Scraper</span>
+            {leads.length > 0 && (
+              <span className={`rounded-full px-1.5 py-0.2 font-mono text-[10px] ${
+                viewMode === "scraper" ? "bg-black/20 text-black" : "bg-[#3f5a66] text-orange-300"
+              }`}>
+                {leads.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setViewMode("crm")}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition ${
+              viewMode === "crm"
+                ? "bg-orange-400 text-black shadow-sm"
+                : "text-slate-300 hover:bg-[#324d58] hover:text-white"
+            }`}
+          >
+            <Database className="h-3.5 w-3.5" />
+            <span>CRM Pipeline</span>
+            {crmLeads.length > 0 && (
+              <span className={`rounded-full px-1.5 py-0.2 font-mono text-[10px] ${
+                viewMode === "crm" ? "bg-black/20 text-black" : "bg-[#3f5a66] text-orange-300"
+              }`}>
+                {crmLeads.length}
+              </span>
+            )}
+          </button>
+        </div>
+
         {/* Form Controls */}
         <form
           onSubmit={handleRunScraper}
-          className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 py-5"
+          className={`flex flex-1 flex-col gap-4 overflow-y-auto px-6 py-5 ${viewMode !== "scraper" ? "hidden" : ""}`}
         >
           {/* Search Query Input */}
           <div className="flex flex-col gap-1.5">
@@ -799,10 +1043,218 @@ export default function LeadDashboardPage() {
             </ul>
           </div>
         </form>
+
+        {/* CRM Sidebar Control Panel */}
+        {viewMode === "crm" && (
+          <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-5">
+            {/* Sync Alert Banner */}
+            {sheetSyncStatus && (
+              <div className="flex items-center gap-2 rounded-xl border border-orange-400/40 bg-orange-400/15 p-2.5 text-xs text-orange-300">
+                <RefreshCw className="h-3.5 w-3.5 shrink-0 text-orange-400 animate-spin" />
+                <span>{sheetSyncStatus}</span>
+              </div>
+            )}
+
+            {/* CRM Pipeline Stats Card */}
+            <div className="rounded-2xl border border-[#486470] bg-[#2e4855] p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-white">CRM Overview</span>
+                <span className="rounded bg-orange-400/20 px-2 py-0.5 font-mono text-[10px] text-orange-300">
+                  Google Sheet
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-xl border border-[#486470] bg-[#1e3540] p-2.5">
+                  <p className="text-[10px] text-slate-400">Total Leads</p>
+                  <p className="font-mono text-base font-bold text-white">{crmLeads.length}</p>
+                </div>
+                <div className="rounded-xl border border-[#486470] bg-[#1e3540] p-2.5">
+                  <p className="text-[10px] text-slate-400">Cities</p>
+                  <p className="font-mono text-base font-bold text-orange-400">{crmCities.length}</p>
+                </div>
+                <div className="rounded-xl border border-[#486470] bg-[#1e3540] p-2.5">
+                  <p className="text-[10px] text-slate-400">Ready to Send</p>
+                  <p className="font-mono text-base font-bold text-slate-200">{crmCounts.ready}</p>
+                </div>
+                <div className="rounded-xl border border-[#486470] bg-[#1e3540] p-2.5">
+                  <p className="text-[10px] text-slate-400">Delivered</p>
+                  <p className="font-mono text-base font-bold text-orange-400">{crmCounts.completed}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* City Quick Filter */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-slate-300">City Filter</label>
+              <select
+                value={crmCityFilter}
+                onChange={(e) => setCrmCityFilter(e.target.value)}
+                className="w-full rounded-xl border border-[#486470] bg-[#324d58] px-3 py-2 text-xs text-white outline-none focus:border-orange-400/50"
+              >
+                <option value="all">All Cities ({crmLeads.length})</option>
+                {crmCities.map((c) => (
+                  <option key={c} value={c}>
+                    {c} ({crmLeads.filter((l) => l.city === c).length})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Google Sheets Sync Actions */}
+            <div className="flex flex-col gap-2 pt-2">
+              <button
+                type="button"
+                onClick={handleManualSheetSync}
+                disabled={isSyncingSheet}
+                className="flex items-center justify-center gap-2 rounded-xl bg-orange-400 py-2.5 px-4 text-xs font-semibold text-black transition hover:bg-orange-300 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isSyncingSheet ? "animate-spin" : ""}`} />
+                <span>{isSyncingSheet ? "Syncing with Sheet..." : "Sync with Google Sheet"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => exportCSV(filteredCRMLeads, `crm-leads-${crmCityFilter}-${Date.now()}.csv`)}
+                disabled={filteredCRMLeads.length === 0}
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-[#486470] bg-[#324d58] py-2 text-xs font-medium text-slate-200 transition hover:border-orange-400/50 hover:text-white disabled:opacity-50 cursor-pointer"
+              >
+                <FileDown className="h-3.5 w-3.5 text-orange-400" />
+                <span>Export Current View CSV ({filteredCRMLeads.length})</span>
+              </button>
+            </div>
+
+            {/* Workflow Guide */}
+            <div className="mt-auto rounded-2xl border border-[#3f5a66] bg-[#2a4250] p-4 text-xs text-slate-400">
+              <div className="flex items-center gap-2 font-medium text-white">
+                <Database className="h-4 w-4 text-orange-400" />
+                <span>Multi-City CRM Stack</span>
+              </div>
+              <ul className="mt-2 space-y-1.5 text-[11px] leading-relaxed">
+                <li>• Scrapes from different cities append without overwriting.</li>
+                <li>• Ticking any stage updates the UI and syncs with Google Sheets.</li>
+                <li>• Daily routine: open &ldquo;Ready to Send&rdquo; and click WA.</li>
+              </ul>
+
+              {crmLeads.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearCRM}
+                  className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-rose-500/25 bg-rose-500/10 py-1.5 text-[11px] font-medium text-rose-300 hover:bg-rose-500/20 cursor-pointer"
+                >
+                  <Trash2 className="h-3 w-3 text-rose-400" />
+                  <span>Clear CRM Local Cache</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </aside>
 
       {/* Right Lead Management Workspace */}
       <main className="flex min-w-0 flex-1 flex-col bg-[#1e3540] lg:h-full lg:overflow-hidden">
+        {viewMode === "crm" ? (
+          <div className="flex h-full flex-col">
+            {/* CRM Header with City Filter, Search, Sort & Status Tabs */}
+            <header className="border-b border-[#486470] bg-[#253d47] px-4 py-3 space-y-3 sm:px-6 sm:py-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-base font-semibold tracking-tight text-white">
+                    Multi-City CRM Pipeline
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Live check-matrix tracking synced with your Google Sheet ({filteredCRMLeads.length} of {crmLeads.length} leads)
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Search */}
+                  <div className="relative w-44 sm:w-56">
+                    <Search className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-500" />
+                    <input
+                      type="text"
+                      value={crmSearch}
+                      onChange={(e) => setCrmSearch(e.target.value)}
+                      placeholder="Search business, city, notes…"
+                      className="w-full rounded-xl border border-[#486470] bg-[#324d58] py-1.5 pr-3 pl-8 text-xs text-white placeholder-slate-500 outline-none focus:border-orange-400/50"
+                    />
+                  </div>
+
+                  {/* City dropdown */}
+                  <select
+                    value={crmCityFilter}
+                    onChange={(e) => setCrmCityFilter(e.target.value)}
+                    className="rounded-xl border border-[#486470] bg-[#324d58] px-2.5 py-1.5 text-xs text-white outline-none focus:border-orange-400/50 cursor-pointer"
+                  >
+                    <option value="all">All Cities ({crmLeads.length})</option>
+                    {crmCities.map((c) => (
+                      <option key={c} value={c}>
+                        {c} ({crmLeads.filter((l) => l.city === c).length})
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Sort */}
+                  <button
+                    type="button"
+                    onClick={() => setCrmSortMode((prev) => (prev === "recent" ? "progress" : "recent"))}
+                    className="rounded-xl border border-[#486470] bg-[#324d58] px-2.5 py-1.5 text-xs text-slate-300 hover:text-white cursor-pointer"
+                    title="Toggle Sort"
+                  >
+                    Sort: {crmSortMode === "recent" ? "Recent" : "Progress"}
+                  </button>
+
+                  {/* Export CSV */}
+                  <button
+                    type="button"
+                    onClick={() => exportCSV(filteredCRMLeads, `leadflow-${crmCityFilter}-${Date.now()}.csv`)}
+                    disabled={filteredCRMLeads.length === 0}
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-orange-400 px-3 py-1.5 text-xs font-semibold text-black hover:bg-orange-300 disabled:opacity-50"
+                  >
+                    <FileDown className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Export CSV</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Status Routine Tabs Bar */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                {(
+                  [
+                    { key: "all", label: "All Leads", count: crmCounts.all },
+                    { key: "ready", label: "Ready to Send", count: crmCounts.ready },
+                    { key: "follow_up", label: "Needs Follow-Up", count: crmCounts.follow_up },
+                    { key: "active_replies", label: "Active Replies", count: crmCounts.active_replies },
+                    { key: "in_production", label: "In Production", count: crmCounts.in_production },
+                    { key: "completed", label: "Completed", count: crmCounts.completed },
+                  ] as { key: CRMStatusFilter; label: string; count: number }[]
+                ).map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setCrmStatusFilter(tab.key)}
+                    className={`shrink-0 cursor-pointer rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
+                      crmStatusFilter === tab.key
+                        ? "bg-orange-400/15 text-orange-300 border border-orange-400/40"
+                        : "text-slate-400 hover:bg-[#324d58] hover:text-white"
+                    }`}
+                  >
+                    {tab.label} ({tab.count})
+                  </button>
+                ))}
+              </div>
+            </header>
+
+            {/* Check-Matrix Table Area */}
+            <div className="flex-1 overflow-auto p-4 sm:p-6">
+              <CRMTable
+                leads={filteredCRMLeads}
+                pitchTemplate={pitchTemplate}
+                onUpdateLead={handleUpdateCRMLead}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="flex h-full flex-col">
         {/* Top Header Metrics Bar */}
         <header className="border-b border-[#486470] bg-[#253d47] px-4 py-3 space-y-3 sm:px-6 sm:py-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1346,7 +1798,9 @@ export default function LeadDashboardPage() {
             </div>
           )}
         </div>
-      </main>
+      </div>
+    )}
+  </main>
 
       {/* API KEY POOL MODAL */}
       {isKeyModalOpen && (

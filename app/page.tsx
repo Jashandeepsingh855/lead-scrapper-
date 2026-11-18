@@ -546,23 +546,27 @@ export default function LeadDashboardPage() {
                 <label htmlFor="maxResults" className="text-xs font-medium text-slate-300">
                   Max leads count
                 </label>
-                <span className="text-[10px] text-slate-500">Custom number</span>
+                <span className="text-[10px] text-orange-400 font-medium">✏️ Type any number</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <input
-                  id="maxResults"
-                  type="number"
-                  min={1}
-                  max={200}
-                  value={maxResults || ""}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value, 10);
-                    setMaxResults(Number.isNaN(val) ? 0 : Math.max(1, Math.min(val, 200)));
-                  }}
-                  placeholder="20"
-                  className="w-16 rounded-xl border border-[#486470] bg-[#324d58] px-2.5 py-1.5 text-center font-mono text-sm text-white placeholder-slate-500 outline-none transition focus:border-orange-400/50"
-                  title="Type any custom number of leads (1-200)"
-                />
+                {/* Custom number input — clearly editable */}
+                <div className="relative flex shrink-0 items-center">
+                  <input
+                    id="maxResults"
+                    type="number"
+                    min={1}
+                    max={200}
+                    value={maxResults || ""}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      setMaxResults(Number.isNaN(val) ? 0 : Math.max(1, Math.min(val, 200)));
+                    }}
+                    placeholder="20"
+                    className="w-20 rounded-xl border-2 border-orange-400/50 bg-[#324d58] px-2.5 py-1.5 text-center font-mono text-sm font-semibold text-white placeholder-slate-400 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
+                    title="Type any custom number of leads (1-200)"
+                  />
+                </div>
+                {/* Quick-select preset chips */}
                 <div className="flex flex-1 items-center gap-1">
                   {PRESET_LIMITS.map((limit) => (
                     <button
@@ -580,6 +584,9 @@ export default function LeadDashboardPage() {
                   ))}
                 </div>
               </div>
+              <p className="text-[10px] text-slate-500 leading-tight">
+                Or type a custom number in the box above (1–200)
+              </p>
             </div>
 
             <div className="flex flex-col gap-1.5">

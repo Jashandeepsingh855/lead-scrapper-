@@ -1046,11 +1046,11 @@ export default function LeadDashboardPage() {
               <div className="hidden md:block overflow-hidden">
                 <table className="w-full border-collapse text-left text-sm table-fixed">
                   <colgroup>
-                    <col className="w-12" />
-                    <col className="w-52 lg:w-60" />
+                    <col className="w-10" />
+                    <col className="w-56 lg:w-64 xl:w-72" />
                     <col className="" />
-                    <col className="w-44" />
-                    <col className="w-44" />
+                    <col className="w-40 lg:w-44" />
+                    <col className="w-44 lg:w-48" />
                   </colgroup>
                   <thead className="border-b border-[#486470] bg-[#324d58] text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     <tr>
@@ -1204,68 +1204,92 @@ export default function LeadDashboardPage() {
                     effectiveLocation,
                     index + 1
                   );
+                  const pitchPreview = renderPitchMessage(
+                    pitchTemplate,
+                    lead.title,
+                    effectiveLocation,
+                    lead
+                  );
                   const isOpened = openedIds.has(lead.id);
                   const isCopied = copiedId === lead.id;
 
                   return (
                     <div
                       key={lead.id}
-                      className={`p-4 space-y-2.5 transition-colors ${
+                      className={`p-4 space-y-3 transition-colors ${
                         isOpened ? "bg-orange-950/15" : "bg-[#2a4250]"
                       }`}
                     >
+                      {/* Row 1: Index + Done badge */}
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs text-slate-500">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="shrink-0 font-mono text-xs text-slate-500">
                             #{String(index + 1).padStart(2, "0")}
                           </span>
-                          <span className="inline-flex items-center rounded-md border border-orange-400/30 bg-orange-950/20 px-2 py-0.5 font-mono text-xs font-medium text-orange-300">
+                          {/* Contact name — wraps on small screens */}
+                          <span className="inline-flex items-center rounded-md border border-orange-400/30 bg-orange-950/20 px-2 py-0.5 font-mono text-xs font-medium text-orange-300 break-all leading-snug">
                             {assignedName}
                           </span>
                         </div>
                         {isOpened && (
-                          <span className="inline-flex items-center gap-1 rounded bg-orange-400/10 px-2 py-0.5 text-[10px] font-medium text-orange-400">
+                          <span className="shrink-0 inline-flex items-center gap-1 rounded bg-orange-400/10 px-2 py-0.5 text-[10px] font-medium text-orange-400">
                             <CheckCircle2 className="h-3 w-3" /> Done
                           </span>
                         )}
                       </div>
 
+                      {/* Row 2: Business title + Maps link */}
                       <div>
-                        <div className="flex items-center gap-1.5 font-medium text-white">
-                          <span>{lead.title}</span>
+                        <div className="flex items-start gap-1.5 font-medium text-white">
+                          <span className="leading-snug">{lead.title}</span>
                           {lead.googleMapsUrl && (
                             <a
                               href={lead.googleMapsUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-slate-500 hover:text-orange-400"
+                              className="shrink-0 mt-0.5 text-slate-500 hover:text-orange-400"
                             >
                               <ExternalLink className="h-3 w-3" />
                             </a>
                           )}
                         </div>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-slate-400">
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-400">
                           {lead.category && <span>{lead.category}</span>}
                           {typeof lead.rating === "number" && (
                             <span className="inline-flex items-center gap-0.5 text-amber-400 font-mono">
                               <Star className="h-3 w-3 fill-amber-400" />
                               {lead.rating.toFixed(1)}
+                              {typeof lead.reviewsCount === "number" && (
+                                <span className="text-slate-500 font-sans">
+                                  ({lead.reviewsCount})
+                                </span>
+                              )}
                             </span>
                           )}
                           {lead.address && (
-                            <span className="truncate max-w-[200px]">{lead.address}</span>
+                            <span className="w-full truncate text-slate-500" title={lead.address}>
+                              {lead.address}
+                            </span>
                           )}
                         </div>
+                        {/* Pitch preview */}
+                        <p className="mt-1 line-clamp-2 text-[11px] text-slate-500 leading-snug">
+                          <span className="text-slate-400 font-medium">Pitch:</span>{" "}
+                          {pitchPreview}
+                        </p>
                       </div>
 
-                      <div className="flex items-center justify-between border-t border-[#3f5a66] pt-2.5">
+                      {/* Row 3: Phone + Copy | WhatsApp buttons — stacked on very small, row on sm+ */}
+                      <div className="flex flex-col gap-2 border-t border-[#3f5a66] pt-3 sm:flex-row sm:items-center sm:justify-between">
+                        {/* Phone */}
                         <div className="flex items-center gap-1.5 font-mono text-xs text-slate-200">
-                          <Phone className="h-3 w-3 text-slate-500" />
-                          <span>{lead.phone}</span>
+                          <Phone className="h-3 w-3 shrink-0 text-slate-500" />
+                          <span className="break-all">{lead.phone}</span>
                           <button
                             type="button"
                             onClick={() => handleCopyPhone(lead)}
-                            className="p-1 text-slate-400 hover:text-white"
+                            className="shrink-0 rounded p-1 text-slate-400 hover:bg-[#3f5a66] hover:text-white"
+                            title="Copy phone"
                           >
                             {isCopied ? (
                               <Check className="h-3.5 w-3.5 text-orange-400" />
@@ -1275,25 +1299,27 @@ export default function LeadDashboardPage() {
                           </button>
                         </div>
 
-                        <div className="flex items-center gap-1.5">
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => handleOpenWhatsAppDesktop(lead)}
-                            className={`inline-flex items-center gap-1 rounded-lg py-1.5 px-3 text-xs font-semibold ${
+                            className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-lg py-2 px-4 text-xs font-semibold transition active:scale-[0.98] ${
                               isOpened
                                 ? "border border-orange-400/40 bg-[#324d58] text-orange-300"
-                                : "bg-orange-400 text-black hover:bg-orange-400"
+                                : "bg-orange-400 text-black hover:bg-orange-300"
                             }`}
                           >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                            <span>WhatsApp</span>
+                            <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                            WhatsApp
                           </button>
                           <button
                             type="button"
                             onClick={() => handleOpenWhatsAppWeb(lead)}
-                            className="rounded-lg border border-[#4c6872] bg-[#324d58] p-1.5 text-slate-400"
+                            className="rounded-lg border border-[#4c6872] bg-[#324d58] p-2 text-slate-400 hover:border-[#5a7880] hover:text-white"
+                            title="Open WhatsApp Web"
                           >
-                            <Globe className="h-3.5 w-3.5" />
+                            <Globe className="h-4 w-4" />
                           </button>
                         </div>
                       </div>

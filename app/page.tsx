@@ -8,12 +8,15 @@ import {
   CheckCircle2,
   Compass,
   Copy,
+  Database,
   Download,
   ExternalLink,
+  FileDown,
   Filter,
   Globe,
   Info,
   Key,
+  Layers,
   MapPin,
   MessageSquare,
   Phone,
@@ -30,6 +33,7 @@ import {
   X,
 } from "lucide-react";
 import type { ScrapedLead, ScrapeResponseBody, VcfPlatform } from "@/lib/types";
+import type { CRMLead, CRMStatusFilter } from "@/lib/crm-types";
 import {
   buildSequentialContactName,
   downloadVcf,
@@ -40,6 +44,14 @@ import {
   buildWhatsAppWebUrl,
   renderPitchMessage,
 } from "@/lib/whatsapp";
+import {
+  appendLeadsToSheet,
+  exportCSV,
+  filterByStatus,
+  scrapedToCRM,
+  sortByLastUpdated,
+} from "@/lib/crm";
+import CRMTable from "@/components/CRMTable";
 
 const DEFAULT_PITCH_TEMPLATE = `Hi {cafe_name} team! Came across your place on Google Maps in {location} and loved what you're doing. Quick question — are you looking to bring in more repeat local customers this month?`;
 

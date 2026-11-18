@@ -571,12 +571,18 @@ export default function LeadDashboardPage() {
 
     // Auto-tick Stage 1 (Msg Sent) & sync to Google Sheet
     const now = new Date().toISOString();
-    handleUpdateCRMLead(lead.id, { msg_sent: true, msg_sent_at: now });
+    const addressNotes = [
+      lead.address ? `Address: ${lead.address}` : "",
+      typeof lead.rating === "number" ? `★ ${lead.rating}${lead.reviewsCount ? ` (${lead.reviewsCount} reviews)` : ""}` : "",
+      lead.website ? `Web: ${lead.website}` : "",
+    ].filter(Boolean).join(" · ") || lead.address || "";
+
+    handleUpdateCRMLead(lead.id, { msg_sent: true, msg_sent_at: now, notes: addressNotes });
     syncLeadToSheet({
       id: lead.id,
       business_name: lead.title,
       city: effectiveLocation,
-      niche: "Business",
+      niche: lead.category || "Business",
       contact: lead.whatsappPhone || lead.phone,
       msg_sent: true,
       replied: false,
@@ -584,7 +590,7 @@ export default function LeadDashboardPage() {
       details_received: false,
       in_progress: false,
       delivered: false,
-      notes: "",
+      notes: addressNotes,
       msg_sent_at: now,
       last_updated: now,
     });
@@ -608,12 +614,18 @@ export default function LeadDashboardPage() {
 
     // Auto-tick Stage 1 (Msg Sent) & sync to Google Sheet
     const now = new Date().toISOString();
-    handleUpdateCRMLead(lead.id, { msg_sent: true, msg_sent_at: now });
+    const addressNotes = [
+      lead.address ? `Address: ${lead.address}` : "",
+      typeof lead.rating === "number" ? `★ ${lead.rating}${lead.reviewsCount ? ` (${lead.reviewsCount} reviews)` : ""}` : "",
+      lead.website ? `Web: ${lead.website}` : "",
+    ].filter(Boolean).join(" · ") || lead.address || "";
+
+    handleUpdateCRMLead(lead.id, { msg_sent: true, msg_sent_at: now, notes: addressNotes });
     syncLeadToSheet({
       id: lead.id,
       business_name: lead.title,
       city: effectiveLocation,
-      niche: "Business",
+      niche: lead.category || "Business",
       contact: lead.whatsappPhone || lead.phone,
       msg_sent: true,
       replied: false,
@@ -621,7 +633,7 @@ export default function LeadDashboardPage() {
       details_received: false,
       in_progress: false,
       delivered: false,
-      notes: "",
+      notes: addressNotes,
       msg_sent_at: now,
       last_updated: now,
     });

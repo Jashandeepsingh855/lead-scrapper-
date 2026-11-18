@@ -2,14 +2,27 @@ import type { CRMLead, CRMStatusFilter } from "./crm-types";
 import type { ScrapedLead } from "./types";
 import { extractLocationFromQuery } from "./vcf";
 
-/** Convert a ScrapedLead from the scraper into a CRMLead row */
+/** Build comprehensive notes string with address, rating, website */
+export function buildLeadNotes(lead: ScrapedLead): string {
+  const parts: string[] = [];
+  if (lead.address) parts.push(`Address: ${lead.address}`);
+  if (typeof lead.rating === "number") {
+    parts.push(`★ ${lead.rating}${lead.reviewsCount ? ` (${lead.reviewsCount} reviews)` : ""}`);
+  }
+  if (lead.website) parts.push(`Web: ${lead.website}`);
+  if (lead.googleMapsUrl) parts.push(`Maps: ${lead.googleMapsUrl}`);
+  return parts.join(" · ") || lead.address || "";
+}
+
+/** Convert a ScrapedLead from the scraper into a CRMLead with full details */
 export function scrapedToCRM(
   lead: ScrapedLead,
   searchQuery: string
 ): CRMLead {
   const city = extractLocationFromQuery(searchQuery);
   const parts = searchQuery.split(" in ");
-  const niche = parts.length >= 2 ? parts[0].trim() : "Business";
+  const niche = lead.category || (parts.length >= 2 ? parts[0].trim() : "Local Business");
+  const now = new Date().toISOString();
 
   return {
     id: lead.id,
@@ -23,14 +36,46 @@ export function scrapedToCRM(
     details_received: false,
     in_progress: false,
     delivered: false,
-    notes: "",
+    notes: buildLeadNotes(lead),
     msg_sent_at: "",
-    last_updated: new Date().toISOString(),
+    last_updated: now,
     _whatsappPhone: lead.whatsappPhone,
     _googleMapsUrl: lead.googleMapsUrl,
     _category: lead.category,
     _rating: lead.rating,
     _reviewsCount: lead.reviewsCount,
+  };
+}
+
+/** Convert a ScrapedLead into a full CRMLead ready for WhatsApp send and Google Sheet sync */
+export function scrapedToCRMLead(
+  lead: ScrapedLead,
+  location: string,
+  searchQuery?: string
+): CRMLead {
+  const now = new Date().toISOString();
+  let niche = lead.category || "";
+  if (!niche && searchQuery) {
+    const parts = searchQuery.split(" in ");
+    niche = parts.length >= 2 ? parts[0].trim() : searchQuery;
+  }
+  if (!niche) niche = "Local Business";
+
+  return {
+    id: lead.id,
+    business_name: lead.title,
+    city: location || "Local",
+    niche,
+    contact: lead.whatsappPhone || lead.phone,
+    msg_sent: true,
+    replied: false,
+    demo_sent: false,
+    details_received: false,
+    in_progress: false,
+    delivered: false,
+    notes: buildLeadNotes(lead),
+    msg_sent_at: now,
+    last_updated: now,
   };
 }
 
@@ -128,34 +173,40 @@ export function exportCSV(leads: CRMLead[], filename = "leadflow-export.csv") {
   URL.revokeObjectURL(url);
 }
 
-/** Sync a single lead update to the Google Sheet via /api/leads */
-export async function syncLeadToSheet(lead: CRMLead): Promise<void> {
+/** Sync a single lead update to the Google Sheet via /api/leads with keepalive */
+export async function syncLeadToSheet(
+  lead: CRMLead
+): Promise<{ ok: boolean; action?: string; error?: string }> {
   try {
     const payload = {
-      action: "update",
+      action: "sync",
       lead: {
         id: lead.id,
         business_name: lead.business_name,
         city: lead.city,
         niche: lead.niche,
         contact: lead.contact,
-        msg_sent: lead.msg_sent,
-        replied: lead.replied,
-        demo_sent: lead.demo_sent,
-        details_received: lead.details_received,
-        in_progress: lead.in_progress,
-        delivered: lead.delivered,
-        notes: lead.notes,
-        msg_sent_at: lead.msg_sent_at,
+        msg_sent: Boolean(lead.msg_sent),
+        replied: Boolean(lead.replied),
+        demo_sent: Boolean(lead.demo_sent),
+        details_received: Boolean(lead.details_received),
+        in_progress: Boolean(lead.in_progress),
+        delivered: Boolean(lead.delivered),
+        notes: lead.notes || "",
+        msg_sent_at: lead.msg_sent_at || new Date().toISOString(),
+        last_updated: lead.last_updated || new Date().toISOString(),
       },
     };
-    await fetch("/api/leads", {
+    const res = await fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
+      keepalive: true,
     });
-  } catch {
-    // Silent background sync — do not throw
+    const data = await res.json();
+    return { ok: res.ok && !data?.error, ...data };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Sync failed" };
   }
 }
 
@@ -174,13 +225,14 @@ export async function appendLeadsToSheet(leads: CRMLead[]): Promise<void> {
       details_received: false,
       in_progress: false,
       delivered: false,
-      notes: "",
+      notes: l.notes || "",
       msg_sent_at: "",
     }));
     await fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "append", leads: sheetLeads }),
+      keepalive: true,
     });
   } catch {
     // Silent

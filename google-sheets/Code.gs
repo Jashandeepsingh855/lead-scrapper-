@@ -1,19 +1,17 @@
 // ============================================================
 // LeadFlow CRM — Google Apps Script Backend (Code.gs)
 // ============================================================
-// DEPLOYMENT INSTRUCTIONS (3 steps):
+// 3-STEP SETUP INSTRUCTIONS:
 //   1. Open your Google Sheet → Extensions → Apps Script
-//   2. Paste this entire file, then click Save (Ctrl+S)
-//   3. Click Deploy → New Deployment → Type: Web App
-//      • Execute as: Me
-//      • Who has access: Anyone
-//      Click Deploy → Copy the Web App URL
-//      Paste that URL into Vercel / .env.local as GOOGLE_SHEET_WEBHOOK_URL
+//   2. Replace everything in Code.gs with this code, then Save (Ctrl+S / Cmd+S)
+//   3. Click "Deploy" → "Manage Deployments" → Edit (pencil icon)
+//      • Set Version to: "New version"
+//      • Click Deploy
 // ============================================================
 
 var SHEET_NAME = "Leads";
 
-// Row 1 headers — do NOT change order
+// Row 1 Headers (Exact order required)
 var HEADERS = [
   "id",
   "business_name",
@@ -50,13 +48,13 @@ function buildIndex(sheet) {
   for (var i = 1; i < data.length; i++) {
     var id = String(data[i][0]).trim();
     var contact = String(data[i][4]).trim();
-    if (id) index["id:" + id] = i + 1; // 1-based row
+    if (id) index["id:" + id] = i + 1; // 1-based row number
     if (contact) index["contact:" + contact] = i + 1;
   }
   return index;
 }
 
-// GET — return all leads as JSON
+// GET: Returns all leads as JSON
 function doGet() {
   try {
     var sheet = getSheet();
@@ -82,7 +80,7 @@ function doGet() {
   }
 }
 
-// POST — handle append, update, and patch actions
+// POST: Handles appending and upserting leads
 function doPost(e) {
   try {
     var payload = JSON.parse(e.postData.contents);
@@ -90,7 +88,7 @@ function doPost(e) {
 
     if (action === "append") {
       return handleAppend(payload.leads || []);
-    } else if (action === "update") {
+    } else if (action === "update" || action === "upsert") {
       return handleUpdate(payload.lead);
     } else {
       return jsonResponse({ error: "Unknown action: " + action });
@@ -100,6 +98,7 @@ function doPost(e) {
   }
 }
 
+// Appends only new leads, skipping duplicates by contact or id
 function handleAppend(leads) {
   var sheet = getSheet();
   var index = buildIndex(sheet);
@@ -112,7 +111,7 @@ function handleAppend(leads) {
     var id = String(lead.id || "").trim();
     var contact = String(lead.contact || "").trim();
 
-    // Skip duplicates
+    // Prevent duplicate entries
     if ((id && index["id:" + id]) || (contact && index["contact:" + contact])) {
       skipped++;
       continue;
@@ -124,19 +123,19 @@ function handleAppend(leads) {
       lead.city || "",
       lead.niche || "",
       contact,
-      false, // msg_sent
-      false, // replied
-      false, // demo_sent
-      false, // details_received
-      false, // in_progress
-      false, // delivered
-      "",    // notes
-      "",    // msg_sent_at
-      now    // last_updated
+      Boolean(lead.msg_sent),
+      Boolean(lead.replied),
+      Boolean(lead.demo_sent),
+      Boolean(lead.details_received),
+      Boolean(lead.in_progress),
+      Boolean(lead.delivered),
+      lead.notes || "",
+      lead.msg_sent_at || "",
+      now
     ];
     sheet.appendRow(row);
     appended++;
-    // Update index to avoid duplicate within same batch
+
     if (id) index["id:" + id] = true;
     if (contact) index["contact:" + contact] = true;
   }
@@ -144,35 +143,60 @@ function handleAppend(leads) {
   return jsonResponse({ ok: true, appended: appended, skipped: skipped });
 }
 
+// Upsert: Updates lead if exists by id/contact, or appends it as new row
 function handleUpdate(lead) {
-  if (!lead) return jsonResponse({ error: "No lead data." });
+  if (!lead) return jsonResponse({ error: "No lead provided" });
   var sheet = getSheet();
   var data = sheet.getDataRange().getValues();
   var headers = data[0];
   var id = String(lead.id || "").trim();
+  var contact = String(lead.contact || "").trim();
   var targetRow = -1;
 
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim() === id) {
-      targetRow = i + 1; // 1-based
+    var rowId = String(data[i][0]).trim();
+    var rowContact = String(data[i][4]).trim();
+    if ((id && rowId === id) || (contact && rowContact === contact)) {
+      targetRow = i + 1;
       break;
     }
   }
 
-  if (targetRow === -1) return jsonResponse({ error: "Lead not found: " + id });
-
   var now = new Date().toISOString();
-  for (var j = 0; j < headers.length; j++) {
-    var key = headers[j];
-    if (key === "id") continue;
-    if (key === "last_updated") {
-      sheet.getRange(targetRow, j + 1).setValue(now);
-    } else if (lead.hasOwnProperty(key)) {
-      sheet.getRange(targetRow, j + 1).setValue(lead[key]);
+
+  // If already in sheet, update matching fields
+  if (targetRow !== -1) {
+    for (var j = 0; j < headers.length; j++) {
+      var key = headers[j];
+      if (key === "id") continue;
+      if (key === "last_updated") {
+        sheet.getRange(targetRow, j + 1).setValue(now);
+      } else if (lead.hasOwnProperty(key)) {
+        sheet.getRange(targetRow, j + 1).setValue(lead[key]);
+      }
     }
+    return jsonResponse({ ok: true, action: "updated", id: id || contact });
   }
 
-  return jsonResponse({ ok: true, updated: id });
+  // If NOT in sheet yet, automatically append it!
+  var row = [
+    id,
+    lead.business_name || "",
+    lead.city || "",
+    lead.niche || "",
+    contact,
+    lead.hasOwnProperty("msg_sent") ? Boolean(lead.msg_sent) : true,
+    Boolean(lead.replied),
+    Boolean(lead.demo_sent),
+    Boolean(lead.details_received),
+    Boolean(lead.in_progress),
+    Boolean(lead.delivered),
+    lead.notes || "",
+    lead.msg_sent_at || now,
+    now
+  ];
+  sheet.appendRow(row);
+  return jsonResponse({ ok: true, action: "appended", id: id || contact });
 }
 
 function jsonResponse(obj) {

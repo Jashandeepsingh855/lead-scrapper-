@@ -71,71 +71,21 @@ export default function LeadDashboardPage() {
   const [locationOverride, setLocationOverride] = useState<string>("");
 
   // Persist custom WhatsApp pitch template across page refreshes
-  const [pitchTemplate, setPitchTemplate] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("leadflow_pitch_template");
-        if (saved && saved.trim()) return saved;
-      } catch {
-        // Fallback
-      }
-    }
-    return DEFAULT_PITCH_TEMPLATE;
-  });
+  const [pitchTemplate, setPitchTemplate] = useState<string>(DEFAULT_PITCH_TEMPLATE);
 
   // Persist scraped leads array across page refreshes
-  const [leads, setLeads] = useState<ScrapedLead[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("leadflow_saved_leads");
-        if (saved) {
-          const parsed = JSON.parse(saved) as ScrapedLead[];
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
-          }
-        }
-      } catch {
-        // Fallback
-      }
-    }
-    return [];
-  });
+  const [leads, setLeads] = useState<ScrapedLead[]>([]);
 
   const [scrapeStats, setScrapeStats] = useState<{
     totalRaw: number;
     filteredOut: number;
-  } | null>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("leadflow_saved_stats");
-        if (saved) return JSON.parse(saved);
-      } catch {
-        // Fallback
-      }
-    }
-    return null;
-  });
+  } | null>(null);
 
   const [isScraping, setIsScraping] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Key Pool State (initialized lazily from localStorage)
-  const [customKeys, setCustomKeys] = useState<string[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("leadflow_apify_keys");
-        if (saved) {
-          const parsed = JSON.parse(saved) as string[];
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
-          }
-        }
-      } catch {
-        // Fallback
-      }
-    }
-    return [];
-  });
+  // Key Pool State
+  const [customKeys, setCustomKeys] = useState<string[]>([]);
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
   const [keyInputText, setKeyInputText] = useState("");
   const [keyValidationStatus, setKeyValidationStatus] = useState<string | null>(null);
@@ -150,33 +100,24 @@ export default function LeadDashboardPage() {
 
   // ── CRM Pipeline State ──────────────────────────────────────────────────
   const [viewMode, setViewMode] = useState<"scraper" | "crm">("scraper");
-  const [crmLeads, setCrmLeads] = useState<CRMLead[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("leadflow_crm_leads");
-        if (saved) {
-          const parsed = JSON.parse(saved) as CRMLead[];
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        }
-      } catch {}
-    }
-    return [];
-  });
+  const [crmLeads, setCrmLeads] = useState<CRMLead[]>([]);
   const [crmCityFilter, setCrmCityFilter] = useState<string>("all");
   const [crmStatusFilter, setCrmStatusFilter] = useState<CRMStatusFilter>("all");
   const [crmSearch, setCrmSearch] = useState<string>("");
   const [crmSortMode, setCrmSortMode] = useState<"recent" | "progress">("recent");
   const [isSyncingSheet, setIsSyncingSheet] = useState<boolean>(false);
   const [sheetSyncStatus, setSheetSyncStatus] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   // Sync crmLeads to localStorage
   useEffect(() => {
+    if (!isMounted) return;
     try {
       if (crmLeads.length > 0) {
         localStorage.setItem("leadflow_crm_leads", JSON.stringify(crmLeads));
       }
     } catch {}
-  }, [crmLeads]);
+  }, [crmLeads, isMounted]);
 
   // Load from Google Sheet on start
   useEffect(() => {
@@ -290,23 +231,48 @@ export default function LeadDashboardPage() {
   // Filtering & Status State
   const [tableFilter, setTableFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "contacted">("all");
-  const [openedIds, setOpenedIds] = useState<Set<string>>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("leadflow_opened_ids");
-        if (saved) {
-          const parsed = JSON.parse(saved) as string[];
-          if (Array.isArray(parsed)) return new Set(parsed);
-        }
-      } catch {
-        // Fallback
-      }
-    }
-    return new Set();
-  });
+  const [openedIds, setOpenedIds] = useState<Set<string>>(new Set());
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [downloadSuccessPlatform, setDownloadSuccessPlatform] = useState<VcfPlatform | null>(null);
   const [showAndroidGuide, setShowAndroidGuide] = useState(false);
+
+  // Safe client hydration on mount (prevents SSR hydration mismatch)
+  useEffect(() => {
+    setIsMounted(true);
+    try {
+      const savedPitch = localStorage.getItem("leadflow_pitch_template");
+      if (savedPitch && savedPitch.trim()) setPitchTemplate(savedPitch);
+
+      const savedLeads = localStorage.getItem("leadflow_saved_leads");
+      if (savedLeads) {
+        const parsed = JSON.parse(savedLeads);
+        if (Array.isArray(parsed) && parsed.length > 0) setLeads(parsed);
+      }
+
+      const savedStats = localStorage.getItem("leadflow_saved_stats");
+      if (savedStats) setScrapeStats(JSON.parse(savedStats));
+
+      const savedKeys = localStorage.getItem("leadflow_apify_keys");
+      if (savedKeys) {
+        const parsed = JSON.parse(savedKeys);
+        if (Array.isArray(parsed) && parsed.length > 0) setCustomKeys(parsed);
+      }
+
+      const savedCrm = localStorage.getItem("leadflow_crm_leads");
+      if (savedCrm) {
+        const parsed = JSON.parse(savedCrm);
+        if (Array.isArray(parsed) && parsed.length > 0) setCrmLeads(parsed);
+      }
+
+      const savedOpened = localStorage.getItem("leadflow_opened_ids");
+      if (savedOpened) {
+        const parsed = JSON.parse(savedOpened);
+        if (Array.isArray(parsed) && parsed.length > 0) setOpenedIds(new Set(parsed));
+      }
+    } catch {
+      // Ignore
+    }
+  }, []);
 
   // Query backend for env-configured keys count on mount
   useEffect(() => {
@@ -330,15 +296,17 @@ export default function LeadDashboardPage() {
 
   // Save custom WhatsApp outreach pitch template to localStorage whenever it updates
   useEffect(() => {
+    if (!isMounted) return;
     try {
       localStorage.setItem("leadflow_pitch_template", pitchTemplate);
     } catch {
       // Ignore
     }
-  }, [pitchTemplate]);
+  }, [pitchTemplate, isMounted]);
 
   // Save scraped leads array to localStorage whenever leads update
   useEffect(() => {
+    if (!isMounted) return;
     try {
       if (leads.length > 0) {
         localStorage.setItem("leadflow_saved_leads", JSON.stringify(leads));
@@ -346,10 +314,11 @@ export default function LeadDashboardPage() {
     } catch {
       // Ignore
     }
-  }, [leads]);
+  }, [leads, isMounted]);
 
   // Save scrape stats to localStorage whenever they update
   useEffect(() => {
+    if (!isMounted) return;
     try {
       if (scrapeStats) {
         localStorage.setItem("leadflow_saved_stats", JSON.stringify(scrapeStats));
@@ -357,16 +326,17 @@ export default function LeadDashboardPage() {
     } catch {
       // Ignore
     }
-  }, [scrapeStats]);
+  }, [scrapeStats, isMounted]);
 
   // Save opened/contacted IDs to localStorage
   useEffect(() => {
+    if (!isMounted) return;
     try {
       localStorage.setItem("leadflow_opened_ids", JSON.stringify(Array.from(openedIds)));
     } catch {
       // Ignore
     }
-  }, [openedIds]);
+  }, [openedIds, isMounted]);
 
   // Save custom keys to localStorage
   function handleSaveCustomKeys(newKeys: string[]) {
@@ -766,6 +736,7 @@ export default function LeadDashboardPage() {
         {/* Form Controls */}
         <form
           onSubmit={handleRunScraper}
+          data-lenis-prevent
           className={`flex flex-1 flex-col gap-4 overflow-y-auto px-6 py-5 ${viewMode !== "scraper" ? "hidden" : ""}`}
         >
           {/* Search Query Input */}
@@ -1058,7 +1029,7 @@ export default function LeadDashboardPage() {
 
         {/* CRM Sidebar Control Panel */}
         {viewMode === "crm" && (
-          <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-5">
+          <div data-lenis-prevent className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 py-5">
             {/* Sync Alert Banner */}
             {sheetSyncStatus && (
               <div className="flex items-center gap-2 rounded-xl border border-orange-400/40 bg-orange-400/15 p-2.5 text-xs text-orange-300">
@@ -1257,7 +1228,7 @@ export default function LeadDashboardPage() {
             </header>
 
             {/* Check-Matrix Table Area */}
-            <div className="flex-1 overflow-auto p-4 sm:p-6">
+            <div data-lenis-prevent className="flex-1 overflow-auto p-4 sm:p-6">
               <CRMTable
                 leads={filteredCRMLeads}
                 pitchTemplate={pitchTemplate}
@@ -1403,7 +1374,7 @@ export default function LeadDashboardPage() {
         </header>
 
         {/* Workspace Body */}
-        <div className="flex-1 overflow-auto p-6">
+        <div data-lenis-prevent className="flex-1 overflow-auto p-6">
           {isScraping ? (
             /* SKELETON LOADING STATE */
             <div className="space-y-4">

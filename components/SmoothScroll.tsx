@@ -18,6 +18,13 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       gestureOrientation: "vertical",
       smoothWheel: true,
       touchMultiplier: 2,
+      prevent: (node) => {
+        return (
+          node.hasAttribute?.("data-lenis-prevent") ||
+          Boolean(node.closest?.("[data-lenis-prevent]")) ||
+          Boolean(node.closest?.(".overflow-auto, .overflow-y-auto, .overflow-x-auto, textarea, input, select"))
+        );
+      },
     });
 
     // Seamless sync between Lenis and GSAP ScrollTrigger

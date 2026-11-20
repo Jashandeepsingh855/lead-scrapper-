@@ -4,11 +4,12 @@ import type {
   ScrapeRequestBody,
   ScrapeResponseBody,
 } from "@/lib/types";
+import { extractLocationFromQuery } from "@/lib/vcf";
 
 export const maxDuration = 300;
 
-// Requested public actor path and the canonical Apify registry identifier
-const REQUESTED_ACTOR_ID = "compass~google-maps-scraper";
+// Canonical Apify Google Maps scraper actor
+const REQUESTED_ACTOR_ID = "compass~crawler-google-places";
 const CANONICAL_ACTOR_ID = "compass~crawler-google-places";
 
 /**
@@ -184,8 +185,8 @@ export async function POST(request: NextRequest) {
 
     const parsedMax = Number(body.maxResults);
     const maxResults = Number.isFinite(parsedMax)
-      ? Math.min(Math.max(Math.trunc(parsedMax), 1), 200)
-      : 15;
+      ? Math.min(Math.max(Math.trunc(parsedMax), 1), 500)
+      : 20;
 
     // Resolve pool of available tokens (unlimited array, ignoring empty/placeholders)
     const tokens = resolveTokenPool(body.customApiTokens);
@@ -199,11 +200,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const requestPayload = {
+    const location = extractLocationFromQuery(searchQuery);
+    const requestPayload: Record<string, unknown> = {
       searchStringsArray: [searchQuery],
+      maxCrawledPlaces: maxResults,
       maxCrawledPlacesPerSearch: maxResults,
       language: "en",
       skipClosedPlaces: false,
+      ...(location ? { locationQuery: location } : {}),
     };
 
     let successfulToken = "";

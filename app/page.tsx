@@ -486,7 +486,7 @@ export default function LeadDashboardPage() {
         },
         body: JSON.stringify({
           searchQuery: trimmedQuery,
-          maxResults: Number.isFinite(maxResults) ? maxResults : 20,
+          maxResults: Number.isFinite(maxResults) && maxResults > 0 ? maxResults : 20,
           customApiTokens: customKeys.length > 0 ? customKeys : undefined,
         }),
       });
@@ -821,15 +821,15 @@ export default function LeadDashboardPage() {
                   id="maxResults"
                   type="number"
                   min={1}
-                  max={200}
+                  max={500}
                   value={maxResults || ""}
                   onChange={(e) => {
                     const val = parseInt(e.target.value, 10);
-                    setMaxResults(Number.isNaN(val) ? 0 : Math.max(1, Math.min(val, 200)));
+                    setMaxResults(Number.isNaN(val) ? 0 : Math.max(1, Math.min(val, 500)));
                   }}
-                  placeholder="e.g. 30"
+                  placeholder="e.g. 50"
                   className="w-full rounded-xl border-2 border-orange-400/60 bg-[#253d47] px-3 py-2 font-mono text-sm font-semibold text-white placeholder-slate-500 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20"
-                  title="Type any custom number of leads (1-200)"
+                  title="Type any custom number of leads (1-500)"
                 />
               </div>
 
